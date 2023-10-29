@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 module.exports = (connection, autoIncrement) => {
 
   const DocumentSchema = new mongoose.Schema({
-    name: {
+    title: {
       type: String,
     },
     description: {

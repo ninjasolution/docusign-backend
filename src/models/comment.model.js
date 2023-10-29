@@ -8,7 +8,7 @@ module.exports = (connection, autoIncrement) => {
     content: {
       type: String,
     },
-    user: {
+    userId: {
       type: Number,
       ref: "User"
     },

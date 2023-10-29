@@ -3,7 +3,9 @@ const Document = db.document;
 const config = require("../config/index")
 
 exports.list = (req, res) => {
-  Document.find({ owner: req.userId })
+  const folder_id = req.params.folder_id;
+  Document.find({ folder: folder_id })
+    .sort({ createdAt: -1 })
     .exec((err, documents) => {
 
       if (err) {
@@ -23,13 +25,35 @@ exports.list = (req, res) => {
     })
 };
 
+exports.getById = (req, res) => {
+  Document.findOne({ _id: req.params.id })
+    .exec((err, document) => {
+      if (err) {
+        res.status(500).send({ message: err, status: config.RES_STATUS_FAIL });
+        return;
+      }
+
+      if (!document) {
+        return res.status(404).send({ message: config.RES_MSG_DATA_NOT_FOUND });
+      }
+
+      return res.status(200).send({
+        message: config.RES_MSG_DATA_FOUND,
+        data: document,
+        status: config.RES_STATUS_SUCCESS,
+      });
+    })
+};
+
+
 
 exports.create = (req, res) => {
-  const Document = new Document({
+  console.log('^^document', req.body);
+  const document = new Document({
     ...req.body,
     owner: req.userId
   });
-  Document.save(async (err, Document) => {
+  document.save(async (err, doc) => {
     if (err) {
       console.log(err)
       return res.status(400).send({ message: err, status: "errors" });
@@ -37,7 +61,7 @@ exports.create = (req, res) => {
 
     return res.status(200).send({
       message: config.RES_MSG_SAVE_SUCCESS,
-      data: Document,
+      data: doc,
       status: config.RES_STATUS_SUCCESS,
     });
   });

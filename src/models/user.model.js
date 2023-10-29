@@ -48,6 +48,10 @@ module.exports = (connection, autoIncrement) => {
       type: String,
       default: ""
     },
+    countrycode: {
+      type: String,
+      default: ""
+    },
     phoneVerified: {
       type: Boolean,
       default: false

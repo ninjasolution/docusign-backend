@@ -4,14 +4,14 @@ const mongoose = require("mongoose");
 module.exports = (connection, autoIncrement) => {
 
   const VersionFileSchema = new mongoose.Schema({
-    name: {
+    title: {
       type: String,
     },
     document: {
       type: Number,
       ref: "Document"
     },
-    editor: {
+    userId: {
       type: Number,
       ref: "User"
     }

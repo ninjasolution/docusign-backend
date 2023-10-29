@@ -23,6 +23,26 @@ exports.list = (req, res) => {
     })
 };
 
+exports.getById = (req, res) => {
+  Folder.findOne({ _id: req.params.id })
+    .exec((err, folder) => {
+      if (err) {
+        res.status(500).send({ message: err, status: config.RES_STATUS_FAIL });
+        return;
+      }
+
+      if (!folder) {
+        return res.status(404).send({ message: config.RES_MSG_DATA_NOT_FOUND });
+      }
+
+      return res.status(200).send({
+        message: config.RES_MSG_DATA_FOUND,
+        data: folder,
+        status: config.RES_STATUS_SUCCESS,
+      });
+    })
+};
+
 exports.update = (req, res) => {
   Folder.updateOne({ _id: req.params.id }, { name: req.body.name })
     .exec((err, Folder) => {
@@ -59,11 +79,11 @@ exports.delete = (req, res) => {
 
 
 exports.create = (req, res) => {
-  const Folder = new Folder({
+  const folder = new Folder({
     ...req.body,
     owner: req.userId
   });
-  Folder.save(async (err, Folder) => {
+  folder.save(async (err, newfolder) => {
     if (err) {
       console.log(err)
       return res.status(400).send({ message: err, status: "errors" });
@@ -71,7 +91,7 @@ exports.create = (req, res) => {
 
     return res.status(200).send({
       message: config.RES_MSG_SAVE_SUCCESS,
-      data: Folder,
+      data: newfolder,
       status: config.RES_STATUS_SUCCESS,
     });
   });

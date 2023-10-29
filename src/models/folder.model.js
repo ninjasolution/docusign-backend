@@ -4,7 +4,10 @@ const mongoose = require("mongoose");
 module.exports = (connection, autoIncrement) => {
 
   const FolderSchema = new mongoose.Schema({
-    name: {
+    title: {
+      type: String,
+    },
+    description: {
       type: String,
     },
     owner: {

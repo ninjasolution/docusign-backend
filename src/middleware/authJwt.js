@@ -6,7 +6,7 @@ const Role = db.role;
 
 const verifyToken = (req, res, next) => {
   let token = req.headers["x-auth-token"];
-
+  // console.log('token', token);
 
   if (!token) {
     return res.status(403).send({ message: "No token provided!", status: "errors" });

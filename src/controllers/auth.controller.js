@@ -11,16 +11,23 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
 const service = require("../service");
-const { securityCode, SUBADMIN, USER, RES_MSG_SUCESS, RES_STATUS_FAIL, PROJECT_STATUS_COMPLETED, PROJECT_STATUS_PENDING } = require("../config");
+const { securityCode, SUBADMIN, USER, RES_MSG_SUCESS, RES_STATUS_FAIL, PROJECT_STATUS_COMPLETED, PROJECT_STATUS_PENDING, RES_MSG_FAIL } = require("../config");
 
 exports.signup = async (req, res) => {
+  // console.log('^-^REQUEST: ', req.body)
+  const { name, email, password } = req.body;
+  // Hash the password
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-  const user = new User({
-    name: req.body.name,
-    wallet: req.body.wallet,
-    description: req.body.description,
-    email: req.body.email,
-  });
+  // Create a new user object with the hashed password
+  const newUser = {
+    name,
+    email,
+    password: hashedPassword,
+  };
+  
+  const user = new User(newUser);
 
   if (req.body.role) {
     Role.findOne({ name: req.body.role }, async (err, role) => {
@@ -35,15 +42,7 @@ exports.signup = async (req, res) => {
         if (err) {
           return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
         }
-        let project = new Project({
-          projectName: req.body.projectName,
-          webUrl: req.body.webUrl,
-          status: PROJECT_STATUS_PENDING,
-          createdBy: user._id
-        })
-  
-        project = await project.save();
-        user.projects.push(project._id);
+
         await user.save();
 
         res.send(user);
@@ -87,86 +86,46 @@ exports.signup = async (req, res) => {
 };
 
 exports.signin = async (req, res) => {
-  const address = await service.recoverSignature(req.body.nonce, req.body.signature)
-  console.log(address)
-  User.findOne({
-    wallet: address
-  })
-    .populate("role", "name")
-    .exec((err, user) => {
-      if (err) {
-        return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
-      }
+  // const address = await service.recoverSignature(req.body.nonce, req.body.signature)
+  // console.log(req.body)
 
-      if (!user) {
+  const { email, password } = req.body;
 
-        return Role.findOne({ name: USER }, (err, role) => {
-          if (err) {
-            return res.status(500).send({ message: err, status: RES_STATUS_FAIL });
-          }
+  // Check if the provided email exists in the User collection
+  const user = await User.findOne({email : email}).populate("role").exec();
+  if (!user) {
+    return res.status(404).json({ status: 'User not found' });
+  }
 
-          if(!role) {
-            return res.status(404).send({ message: "Role doesn't exist.", status: RES_STATUS_FAIL });
-          }
+  // Compare the provided password with the hashed password stored in the user object
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  // console.log('^-^Password, ', user.password)
+  if (!isPasswordValid) {
+    return res.status(401).json({ status: 'Invalid password' });
+  }
 
-          const user = new User({
-            wallet: address,
-            nonce: req.body.nonce,
-            role: role._id,
-          });
-          user.save(async (err, nUser) => {
-            if (err) {
-              return res.status(200).send({ message: `E11000 duplicate key error collection: users index: email_1 dup key: { email: ${req.body.email}}`, status: RES_STATUS_FAIL });
-            }
-            var token = jwt.sign({ id: nUser._id }, securityCode, {
-              expiresIn: 86400 // 24 hours
-            });
+  var token = jwt.sign({ id: user._id }, securityCode, {
+    expiresIn: 86400 // 24 hours
+  });
 
-            return res.status(200).send({
-              message: RES_MSG_SUCESS,
-              data: {
-                _id: nUser._id,
-                wallet: nUser.wallet,
-                nonce: nUser.nonce,
-                role: {name: SUBADMIN},
-                token,
-              },
-              status: true,
-            });
-          });
-        });
-
-      }
-
-      if(user.role.name == SUBADMIN && !user.status) {
-        return res.status(200).send({ message: "Not approved", status: RES_STATUS_FAIL });
-      }
-
-      var token = jwt.sign({ id: user._id }, securityCode, {
-        expiresIn: 86400 // 24 hours
-      });
-
-      return res.status(200).send({
-        status: RES_MSG_SUCESS,
-        data: {
-          _id: user._id,
-          wallet: address,
-          nonce: req.body.nonce,
-          name: user.name,
-          email: user.email,
-          description: user.description,
-          socialUrl: user.socialUrl,
-          image: user.image,
-          emailVerified: user.emailVerified,
-          phoneVerified: user.phoneVerified,
-          changePasswordAt: user.changePasswordAt,
-          passwordtoken: user.resetPasswordToken,
-          passwordtokenexp: user.resetPasswordExpires,
-          role: user.role,
-          token
-        }
-      });
-    });
+  return res.status(200).send({
+    status: RES_MSG_SUCESS,
+    data: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      description: user.description,
+      socialUrl: user.socialUrl,
+      image: user.image,
+      emailVerified: user.emailVerified,
+      phoneVerified: user.phoneVerified,
+      changePasswordAt: user.changePasswordAt,
+      passwordtoken: user.resetPasswordToken,
+      passwordtokenexp: user.resetPasswordExpires,
+      role: user.role,
+      token
+    }
+  });
 };
 
 exports.verifyEmail = async (req, res) => {
@@ -265,6 +224,40 @@ exports.signout = async (req, res) => {
     req.session = null;
     return res.status(200).send({
       message: "You've been signed out!",
+      status: RES_MSG_SUCESS
+    });
+  } catch (err) {
+    res.status(200).send({ message: "An error occured", status: RES_STATUS_FAIL });
+  }
+};
+
+exports.profile = async (req, res) => {
+  try {
+    const { id } = req.body.id;
+    const user = await User.findOne({_id : id}).populate("role").exec();
+    if(!user) return res.status(200).send({
+      message: "User Not found",
+      status: RES_MSG_FAIL
+    });
+    else return res.status(200).send({
+      message: "You've been visited your own profile page!",
+      status: RES_MSG_SUCESS
+    });
+  } catch (err) {
+    res.status(200).send({ message: "An error occured", status: RES_STATUS_FAIL });
+  }
+};
+
+exports.updateprofile = async (req, res) => {
+  try {
+    const { id } = req.body.id;
+    const user = await User.findOne({_id : id}).populate("role").exec();
+    if(!user) return res.status(200).send({
+      message: "User Not found",
+      status: RES_MSG_FAIL
+    });
+    else return res.status(200).send({
+      message: "You've been visited your own profile page!",
       status: RES_MSG_SUCESS
     });
   } catch (err) {

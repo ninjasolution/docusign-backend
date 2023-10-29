@@ -9,6 +9,7 @@ const Role = db.role;
 const Nonce = db.nonce;
 const Transaction = db.transaction;
 const axios = require("axios").default;
+const bcrypt = require("bcryptjs");
 
 exports.create = async (req, res) => {
 
@@ -194,6 +195,7 @@ exports.setRole = (req, res) => {
 };
 
 exports.update = (req, res) => {
+  const { name, email, password, avatar, phone, countrycode } = req.body;
   User.findOne({ _id: req.userId })
     .populate('role', "name")
     .exec(async (err, user) => {
@@ -206,15 +208,18 @@ exports.update = (req, res) => {
       if (!user) {
         return res.status(200).send({ message: "User Not found.", status: RES_STATUS_FAIL });
       }
-
-      user.name = req.body.name;
-      user.email = req.body.email;
-      user.description = req.body.description;
-      if (req.body.image) {
-        user.image = req.body.image;
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      user.name = name;
+      user.email = email;
+      user.image = avatar;
+      user.password = hashedPassword;
+      // user.description = description;
+      if (avatar) {
+        user.image = avatar;
       }
-      user.socialUrl = req.body.socialUrl;
-
+      user.phoneNumber = phone;
+      user.countrycode = countrycode;
       user.save(err => {
         if (err) {
           return res.status(200).send({ message: err, status: RES_STATUS_FAIL });

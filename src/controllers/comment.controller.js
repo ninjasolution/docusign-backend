@@ -1,20 +1,22 @@
 const db = require("../models");
 const Comment = db.comment;
+const User = db.user;
 const config = require("../config/index")
 
 exports.list = (req, res) => {
+  const version_id = req.params.version_id;
+  // let options = {}
 
-  let options = {}
+  // if (req.query.proposalId) {
+  //   options.proposal = req.query.proposalId
+  // }
+  // if (req.query.user) {
+  //   options.user = req.query.user
+  // }
 
-  if (req.query.proposalId) {
-    options.proposal = req.query.proposalId
-  }
-  if (req.query.user) {
-    options.user = req.query.user
-  }
-
-  Comment.find(options)
-    .populate({ path: "user", select: "wallet image" })
+  Comment.find({ versionFile: version_id })
+    .populate({ path: "userId", select: "wallet image" })
+    .sort({ createdAt: -1 })
     .exec((err, comments) => {
 
       if (err) {
@@ -70,13 +72,14 @@ exports.delete = (req, res) => {
 
 
 exports.create = (req, res) => {
-  const comment = new Comment({
+  const ncomment = new Comment({
     ...req.body,
-    user: req.userId
+    userId: req.userId
   });
-  comment.save(async (err, comment) => {
+  ncomment.save(async (err, comment) => {
     if (err) {
       console.log(err)
+    .sort({ createdAt: -1 })
       return res.status(400).send({ message: err, status: "errors" });
     }
 
@@ -86,4 +89,23 @@ exports.create = (req, res) => {
       status: config.RES_STATUS_SUCCESS,
     });
   });
+}
+
+
+exports.members = async (req, res) => {
+  const version_id = req.params.version_id;
+  try {
+    const authorIds = (await Comment.find({ versionFile: version_id }))?.map(d => d.userId);
+    console.log(authorIds);
+    // const users = await User.find();
+    const users = await User.find({ _id: { $in: authorIds } });
+    console.log(users);
+    return res.status(200).send({
+      message: config.RES_MSG_DATA_FOUND,
+      data: users,
+      status: config.RES_STATUS_SUCCESS,
+    });
+  } catch (err) {
+    return res.status(400).send({ message: err.message, status: "errors" });
+  }
 }

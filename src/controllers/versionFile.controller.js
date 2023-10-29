@@ -1,11 +1,12 @@
 const db = require("../models");
-const VersionFile = db.VersionFile;
+const VersionFile = db.versionFile;
 const config = require("../config/index")
 
 exports.list = (req, res) => {
-  VersionFile.find({ owner: req.userId })
+  const document_id = req.params.document_id;
+  VersionFile.find({ document: document_id })
+    .sort({ createdAt: -1 })
     .exec((err, versionFiles) => {
-
       if (err) {
         res.status(500).send({ message: err, status: config.RES_STATUS_FAIL });
         return;
@@ -23,13 +24,33 @@ exports.list = (req, res) => {
     })
 };
 
+exports.getById = (req, res) => {
+  const id = req.params.id;
+  VersionFile.findOne({ _id: id })
+    .exec((err, versionFiles) => {
+      if (err) {
+        res.status(500).send({ message: err, status: config.RES_STATUS_FAIL });
+        return;
+      }
+      if (!versionFiles) {
+        return res.status(404).send({ message: config.RES_MSG_DATA_NOT_FOUND });
+      }
+      return res.status(200).send({
+        message: config.RES_MSG_DATA_FOUND,
+        data: versionFiles,
+        status: config.RES_STATUS_SUCCESS,
+      });
+    })
+};
+
 
 exports.create = (req, res) => {
-  const VersionFile = new VersionFile({
+  const versionFile = new VersionFile({
+    document: req.body.document_id,
     ...req.body,
-    editor: req.userId
+    userId: req.userId
   });
-  VersionFile.save(async (err, VersionFile) => {
+  versionFile.save(async (err, vesion) => {
     if (err) {
       console.log(err)
       return res.status(400).send({ message: err, status: "errors" });
@@ -37,7 +58,7 @@ exports.create = (req, res) => {
 
     return res.status(200).send({
       message: config.RES_MSG_SAVE_SUCCESS,
-      data: VersionFile,
+      data: vesion,
       status: config.RES_STATUS_SUCCESS,
     });
   });
