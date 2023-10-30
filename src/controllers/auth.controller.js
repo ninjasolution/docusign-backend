@@ -11,11 +11,10 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
 const service = require("../service");
-const { securityCode, SUBADMIN, USER, RES_MSG_SUCESS, RES_STATUS_FAIL, PROJECT_STATUS_COMPLETED, PROJECT_STATUS_PENDING, RES_MSG_FAIL } = require("../config");
+const { securityCode, SUBADMIN, USER, RES_MSG_SUCESS, RES_STATUS_FAIL, PROJECT_STATUS_COMPLETED, PROJECT_STATUS_PENDING, RES_MSG_FAIL, RES_STATUS_SUCCESS, RES_MSG_SAVE_SUCCESS } = require("../config");
 
 exports.signup = async (req, res) => {
-  // console.log('^-^REQUEST: ', req.body)
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
   // Hash the password
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -29,7 +28,7 @@ exports.signup = async (req, res) => {
   
   const user = new User(newUser);
 
-  if (req.body.role) {
+  if (role) {
     Role.findOne({ name: req.body.role }, async (err, role) => {
       if (err) {
         return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
@@ -38,14 +37,16 @@ exports.signup = async (req, res) => {
       user.role = role._id;
       user.status = 0;
 
+      // console.log('^-^user: ', user)
+
       user.save(async(err, user) => {
         if (err) {
+          console.log('^^Error', err)
           return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
         }
 
         await user.save();
-
-        res.send(user);
+        return res.status(200).send({ message: RES_MSG_SAVE_SUCCESS, status: RES_MSG_SUCESS });
       });
     }
     );

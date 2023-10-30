@@ -34,7 +34,8 @@ module.exports = (connection, autoIncrement) => {
     },
     wallet: {
       type: String,
-      unique: true
+      default: ""
+      // unique: true
     },
     projects: [{
       type: Number,
