@@ -28,6 +28,33 @@ exports.create = (req, res) => {
   }
 }
 
+exports.versioncreate = (req, res, next) => {
+  console.log('^^', req.file);
+  if (!req.file) {
+    console.log("No file is available!");
+    return res.send({
+      success: false
+    });
+
+  } else {
+    const words = req.file.originalname.split('.');
+    const fileType = words[words.length - 1];
+    const fileName = `${new Date().getDate()}-${new Date().getMonth()}-${new Date().getFullYear()}-${new Date().getHours()}-${new Date().getMinutes()}-${new Date().getSeconds()}-${new Date().getMilliseconds()}.${fileType}`;
+
+    // setTimeout(() => {
+      fs.rename('./public/files/' + req.file.originalname, './public/files/' + fileName, function (err) {
+        if (err) console.log('ERROR: ' + err);
+      });
+    // }, 1000);
+
+    // Store file name in res.locals
+    res.locals.fileName = fileName;
+    
+    next();
+  }
+}
+
+
 exports.get = (req, res) => {
 
   var url = path.join(__dirname, './public/files/')

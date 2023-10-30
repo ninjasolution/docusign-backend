@@ -45,9 +45,11 @@ exports.getById = (req, res) => {
 
 
 exports.create = (req, res) => {
+  console.log('^^', res.locals.fileName);
   const versionFile = new VersionFile({
     document: req.body.document_id,
     ...req.body,
+    fileName: res.locals.fileName,
     userId: req.userId
   });
   versionFile.save(async (err, vesion) => {

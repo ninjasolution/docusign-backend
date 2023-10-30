@@ -81,7 +81,7 @@ router.put("/document/:id", middlewares.authJwt.verifyToken, documentController.
 // Version
 router.get("/versions/:document_id", middlewares.authJwt.verifyToken, versionFileController.list);
 router.get("/version/:id", middlewares.authJwt.verifyToken, versionFileController.getById);
-router.post("/version", middlewares.authJwt.verifyToken, versionFileController.create);
+router.post("/version", middlewares.authJwt.verifyToken, fileController.upload.single('file'),  fileController.versioncreate, versionFileController.create);
 router.delete("/version/:id", middlewares.authJwt.verifyToken, versionFileController.delete);
 router.put("/version/:id", middlewares.authJwt.verifyToken, versionFileController.update);
 

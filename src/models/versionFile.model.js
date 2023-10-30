@@ -7,6 +7,12 @@ module.exports = (connection, autoIncrement) => {
     title: {
       type: String,
     },
+    description: {
+      type: String,
+    },
+    fileName: {
+      type: String,
+    },
     document: {
       type: Number,
       ref: "Document"
