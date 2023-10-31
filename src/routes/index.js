@@ -11,6 +11,8 @@ const commentController = require("../controllers/comment.controller");
 const documentController = require("../controllers/document.controller");
 const folderController = require("../controllers/folder.controller");
 const versionFileController = require("../controllers/versionFile.controller");
+const invitationController = require("../controllers/invitation.controller");
+
 
 router.post("/auth/signup", [middlewares.verifySignUp.checkDuplicateusernameOrEmail], authController.signup)
 router.post("/auth/signin", authController.signin)
@@ -76,7 +78,9 @@ router.get("/document/:id", middlewares.authJwt.verifyToken, documentController.
 router.post("/document", middlewares.authJwt.verifyToken, documentController.create);
 router.delete("/document/:id", middlewares.authJwt.verifyToken, documentController.delete);
 router.put("/document/:id", middlewares.authJwt.verifyToken, documentController.update);
-
+router.get("/counttotalfolders", middlewares.authJwt.verifyToken, documentController.counttotallist);
+router.get("/countinvitedfolders", middlewares.authJwt.verifyToken, documentController.countinvitedlist);
+router.get("/recentdocuments", middlewares.authJwt.verifyToken, documentController.recentlist);
 
 // Version
 router.get("/versions/:document_id", middlewares.authJwt.verifyToken, versionFileController.list);
@@ -92,5 +96,17 @@ router.get("/members/:version_id", middlewares.authJwt.verifyToken, commentContr
 router.post("/comment", middlewares.authJwt.verifyToken, commentController.create);
 router.delete("/comment/:id", middlewares.authJwt.verifyToken, commentController.delete);
 router.put("/comment/:id", middlewares.authJwt.verifyToken, commentController.update);
+
+// Friends
+router.get("/counttotalfriends", middlewares.authJwt.verifyToken, invitationController.counttotallist);
+router.get("/totalfriends", middlewares.authJwt.verifyToken, invitationController.totallist);
+router.get("/invitations", middlewares.authJwt.verifyToken, invitationController.list);
+router.get("/invitation/:id", middlewares.authJwt.verifyToken, invitationController.getById);
+router.post("/invitation", middlewares.authJwt.verifyToken, invitationController.create);
+router.delete("/invitation/:id", middlewares.authJwt.verifyToken, invitationController.delete);
+router.put("/invitation/:id", middlewares.authJwt.verifyToken, invitationController.update);
+
+// Invitations
+router.get("/notifications", middlewares.authJwt.verifyToken, invitationController.notificationlist);
 
 module.exports = router;

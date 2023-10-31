@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+var timestamps = require('mongoose-timestamp');
 
 
 module.exports = (connection, autoIncrement) => {
@@ -13,6 +14,10 @@ module.exports = (connection, autoIncrement) => {
     fileName: {
       type: String,
     },
+    version: {
+      type: Number,
+      default: 0.1
+    },
     document: {
       type: Number,
       ref: "Document"
@@ -23,6 +28,7 @@ module.exports = (connection, autoIncrement) => {
     }
   });
   
+  VersionFileSchema.plugin(timestamps)
   VersionFileSchema.plugin(autoIncrement.plugin, "VersionFile")  
 
   const VersionFile = connection.model(

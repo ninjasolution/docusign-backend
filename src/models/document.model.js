@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+var timestamps = require('mongoose-timestamp');
 
 
 module.exports = (connection, autoIncrement) => {
@@ -23,7 +24,8 @@ module.exports = (connection, autoIncrement) => {
       ref: "User"
     }
   });
-  
+
+  DocumentSchema.plugin(timestamps)
   DocumentSchema.plugin(autoIncrement.plugin, "Document")  
 
   const Document = connection.model(

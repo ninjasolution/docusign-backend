@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@uniswap/permit2-sdk": "^1.2.0",
-    "axios": "^0.27.2",
+    "axios": "^1.6.0",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
@@ -23,6 +23,7 @@
     "express": "~4.16.1",
     "express-session": "^1.17.2",
     "express-validator": "^7.0.1",
+    "form-data": "^4.0.0",
     "http-errors": "~1.6.3",
     "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+var timestamps = require('mongoose-timestamp');
 
 
 module.exports = (connection, autoIncrement) => {
@@ -13,9 +14,10 @@ module.exports = (connection, autoIncrement) => {
     owner: {
       type: Number,
       ref: "User"
-    }
+    },
   });
   
+  FolderSchema.plugin(timestamps)
   FolderSchema.plugin(autoIncrement.plugin, "Folder")  
 
   const Folder = connection.model(

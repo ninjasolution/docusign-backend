@@ -222,7 +222,7 @@ exports.update = (req, res) => {
       user.countrycode = countrycode;
       user.save(err => {
         if (err) {
-          return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+          return res.status(400).send({ message: err, status: RES_STATUS_FAIL });
         }
         return res.status(200).json({ status: RES_STATUS_SUCCESS, data: user });
       });

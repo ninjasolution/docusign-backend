@@ -5,6 +5,7 @@ module.exports = {
     USER: "USER",
     RES_STATUS_SUCCESS: 1,
 	RES_STATUS_FAIL: 0,
+	RES_STATUS_EXIST: 2,
 	RES_MSG_SAVE_SUCCESS: "Data is saved successfuly",
 	RES_MSG_SAVE_FAIL: "Data saving is fail",
 	RES_MSG_UPDATE_SUCCESS: "Data is updated successfuly",

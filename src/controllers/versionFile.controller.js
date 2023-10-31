@@ -4,7 +4,9 @@ const config = require("../config/index")
 
 exports.list = (req, res) => {
   const document_id = req.params.document_id;
+  // console.log('%^^', document_id)
   VersionFile.find({ document: document_id })
+    .populate('userId')
     .sort({ createdAt: -1 })
     .exec((err, versionFiles) => {
       if (err) {
@@ -45,22 +47,23 @@ exports.getById = (req, res) => {
 
 
 exports.create = (req, res) => {
-  console.log('^^', res.locals.fileName);
+  // console.log('^^', req.body);
   const versionFile = new VersionFile({
     document: req.body.document_id,
     ...req.body,
     fileName: res.locals.fileName,
     userId: req.userId
   });
-  versionFile.save(async (err, vesion) => {
+  versionFile.save(async (err, version) => {
     if (err) {
       console.log(err)
       return res.status(400).send({ message: err, status: "errors" });
     }
 
+    let newversion = await VersionFile.findOne({ _id: version._id}).populate('userId');
     return res.status(200).send({
       message: config.RES_MSG_SAVE_SUCCESS,
-      data: vesion,
+      data: newversion,
       status: config.RES_STATUS_SUCCESS,
     });
   });

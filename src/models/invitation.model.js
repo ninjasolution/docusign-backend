@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+var timestamps = require('mongoose-timestamp');
 
 
 module.exports = (connection, autoIncrement) => {
@@ -8,12 +9,13 @@ module.exports = (connection, autoIncrement) => {
       type: Number,
       ref: "User"
     },
-    invitation: {
+    documentId: {
       type: Number,
-      ref: "Invitation"
+      ref: "Document"
     },
     permision: {
-      type: Number,
+      type: Boolean,
+      default: false,
     },
     isAccepted: {
       type: Boolean,
@@ -25,6 +27,7 @@ module.exports = (connection, autoIncrement) => {
     }
   });
   
+  InvitationSchema.plugin(timestamps)
   InvitationSchema.plugin(autoIncrement.plugin, "Invitation")  
 
   const Invitation = connection.model(

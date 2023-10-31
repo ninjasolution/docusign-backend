@@ -1,9 +1,15 @@
 const db = require("../models");
 const Folder = db.folder;
+const Docuemnt = db.document;
+const Invitation = db.invitation;
+
 const config = require("../config/index")
 
-exports.list = (req, res) => {
-  Folder.find({ owner: req.userId })
+exports.list = async (req, res) => {
+  try {
+    const documentIds = (await Invitation.find({ target: req.userId})).map(d => d.documentId);
+    const folderIds = (await Docuemnt.find({ _id: { $in: documentIds}})).map(d => d.folder)
+    Folder.find({ $or: [{owner: req.userId}, { _id: { $in: folderIds }}] })
     .exec((err, folders) => {
 
       if (err) {
@@ -21,6 +27,13 @@ exports.list = (req, res) => {
         status: config.RES_STATUS_SUCCESS,
       });
     })
+  } catch (error) {
+    return res.status(400).send({
+      message: config.RES_MSG_DATA_NOT_FOUND,
+      data: [],
+      status: config.RES_STATUS_FAIL,
+    });
+  }
 };
 
 exports.getById = (req, res) => {
