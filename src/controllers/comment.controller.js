@@ -15,7 +15,7 @@ exports.list = (req, res) => {
   // }
 
   Comment.find({ versionFile: version_id })
-    .populate({ path: "userId", select: "wallet image" })
+    .populate({ path: "userId" })
     .sort({ createdAt: -1 })
     .exec((err, comments) => {
 
@@ -71,7 +71,7 @@ exports.delete = (req, res) => {
 };
 
 
-exports.create = (req, res) => {
+exports.create = async (req, res) => {
   const ncomment = new Comment({
     ...req.body,
     userId: req.userId
@@ -82,10 +82,10 @@ exports.create = (req, res) => {
     .sort({ createdAt: -1 })
       return res.status(400).send({ message: err, status: "errors" });
     }
-
+    const newcomment = await Comment.findOne({ _id: comment._id }).populate('userId');
     return res.status(200).send({
       message: config.RES_MSG_SAVE_SUCCESS,
-      data: comment,
+      data: newcomment,
       status: config.RES_STATUS_SUCCESS,
     });
   });

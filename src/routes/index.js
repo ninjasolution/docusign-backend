@@ -12,6 +12,7 @@ const documentController = require("../controllers/document.controller");
 const folderController = require("../controllers/folder.controller");
 const versionFileController = require("../controllers/versionFile.controller");
 const invitationController = require("../controllers/invitation.controller");
+const verificationController = require("../controllers/verification.controller");
 
 
 router.post("/auth/signup", [middlewares.verifySignUp.checkDuplicateusernameOrEmail], authController.signup)
@@ -30,7 +31,7 @@ router.put("/auth/rest", authController.changePassword)
 router.put("/super-admin/approve", userController.approve);
 router.post("/admin/create", authController.signup);
 router.get("/admin/get-nonce/:address", userController.getUserNonce);
-router.get("/admin/single/:id([0-9]+)", [middlewares.authJwt.verifyToken, middlewares.authJwt.isAdmin], userController.getUser);
+router.get("/admin/single/:id([0-9]+)", middlewares.authJwt.verifyToken, userController.getUser);
 router.put("/admin/edit", middlewares.authJwt.verifyToken, userController.update);
 router.get("/admin/gen-snapshot", middlewares.authJwt.verifyToken, projectController.genSnapshot);
 router.get("/admin/get-whitelisted-user", middlewares.authJwt.verifyToken, projectController.getWhiteList);
@@ -108,5 +109,8 @@ router.put("/invitation/:id", middlewares.authJwt.verifyToken, invitationControl
 
 // Invitations
 router.get("/notifications", middlewares.authJwt.verifyToken, invitationController.notificationlist);
+
+// Verifications
+router.get("/verifications", middlewares.authJwt.verifyToken, verificationController.list);
 
 module.exports = router;

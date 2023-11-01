@@ -195,7 +195,7 @@ exports.setRole = (req, res) => {
 };
 
 exports.update = (req, res) => {
-  const { name, email, password, avatar, phone, countrycode } = req.body;
+  const { name, email, password, avatar, phone, countrycode, userId } = req.body;
   User.findOne({ _id: req.userId })
     .populate('role', "name")
     .exec(async (err, user) => {
@@ -214,6 +214,7 @@ exports.update = (req, res) => {
       user.email = email;
       user.image = avatar;
       user.password = hashedPassword;
+      user.userId = userId;
       // user.description = description;
       if (avatar) {
         user.image = avatar;

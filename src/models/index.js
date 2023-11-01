@@ -28,6 +28,7 @@ db.document = require("./document.model")(db.connection, autoIncrement);
 db.folder = require("./folder.model")(db.connection, autoIncrement);
 db.versionFile = require("./versionFile.model")(db.connection, autoIncrement);
 db.invitation = require("./invitation.model")(db.connection, autoIncrement);
+db.verification = require("./verification.model")(db.connection, autoIncrement);
 
 
 db.ROLES = [SUPERADMIN, SUBADMIN, USER]

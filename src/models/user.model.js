@@ -4,6 +4,10 @@ var timestamps = require('mongoose-timestamp');
 module.exports = (connection, autoIncrement) => {
 
   const UserSchema = new mongoose.Schema({
+    userId: {
+      type: String,
+      unique: true
+    },
     name: {
       type: String,
       min: 3,
@@ -34,8 +38,7 @@ module.exports = (connection, autoIncrement) => {
     },
     wallet: {
       type: String,
-      // default: ""
-      // unique: true
+      default: 0
     },
     projects: [{
       type: Number,

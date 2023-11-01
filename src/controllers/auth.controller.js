@@ -39,13 +39,11 @@ exports.signup = async (req, res) => {
 
       // console.log('^-^user: ', user)
 
-      user.save(async(err, user) => {
+      user.save((err, user) => {
         if (err) {
-          console.log('^^Error', err)
+          // console.log('^^Error', err)
           return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
         }
-
-        await user.save();
         return res.status(200).send({ message: RES_MSG_SAVE_SUCCESS, status: RES_MSG_SUCESS });
       });
     }
