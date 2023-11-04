@@ -14,7 +14,7 @@ const service = require("../service");
 const { securityCode, SUBADMIN, USER, RES_MSG_SUCESS, RES_STATUS_FAIL, PROJECT_STATUS_COMPLETED, PROJECT_STATUS_PENDING, RES_MSG_FAIL, RES_STATUS_SUCCESS, RES_MSG_SAVE_SUCCESS } = require("../config");
 
 exports.signup = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, userId, password, role } = req.body;
   // Hash the password
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -23,9 +23,12 @@ exports.signup = async (req, res) => {
   const newUser = {
     name,
     email,
+    userId,
     password: hashedPassword,
   };
   
+
+  console.log(req.body)
   const user = new User(newUser);
 
   if (role) {
@@ -34,14 +37,15 @@ exports.signup = async (req, res) => {
         return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
       }
 
-      user.role = role._id;
+      user.role = role?._id;
       user.status = 0;
+      user.wallet = Math.random();
 
       // console.log('^-^user: ', user)
 
       user.save((err, user) => {
         if (err) {
-          // console.log('^^Error', err)
+          console.log('^^Error', err)
           return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
         }
         return res.status(200).send({ message: RES_MSG_SAVE_SUCCESS, status: RES_MSG_SUCESS });

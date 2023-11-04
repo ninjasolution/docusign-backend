@@ -1,5 +1,6 @@
 const db = require("../models");
 const VersionFile = db.versionFile;
+const Verification = db.verification;
 const config = require("../config/index")
 
 exports.list = (req, res) => {
@@ -8,19 +9,27 @@ exports.list = (req, res) => {
   VersionFile.find({ document: document_id })
     .populate('userId')
     .sort({ createdAt: -1 })
-    .exec((err, versionFiles) => {
+    .exec(async (err, versionFiles) => {
       if (err) {
         res.status(500).send({ message: err, status: config.RES_STATUS_FAIL });
         return;
       }
 
-      if (!versionFiles) {
-        return res.status(404).send({ message: config.RES_MSG_DATA_NOT_FOUND });
-      }
+      const updatedDocs = await Promise.all(versionFiles.map(async d => {
+        // find verification info
+        let verify;
+        if(d?._doc?.iscompleted || d?.iscompleted) {
+          verify = await Verification.findOne({ version: (d?._doc?._id || d?._id), userId: req.userId })
+        }
+        return {
+          ...(d?._doc || d),
+          verify
+        }
+      }))
 
       return res.status(200).send({
         message: config.RES_MSG_DATA_FOUND,
-        data: versionFiles,
+        data: updatedDocs,
         status: config.RES_STATUS_SUCCESS,
       });
     })
@@ -71,17 +80,19 @@ exports.create = (req, res) => {
 
 
 exports.update = (req, res) => {
-  VersionFile.updateOne({ _id: req.params.id }, { name: req.body.name })
-    .exec((err, VersionFile) => {
+  VersionFile.updateOne({ _id: req.params.id }, { title: req.body.title })
+    .exec(async (err, versionFile) => {
 
       if (err) {
         res.status(500).send({ message: err, status: config.RES_MSG_UPDATE_FAIL });
         return;
       }
 
+      const newviersionFile = await VersionFile.findOne({ _id: req.params.id }).populate('userId');
+
       return res.status(200).send({
         message: config.RES_MSG_UPDATE_SUCCESS,
-        data: VersionFile,
+        data: newviersionFile,
         status: config.RES_STATUS_SUCCESS,
       });
     })
@@ -91,7 +102,7 @@ exports.update = (req, res) => {
 exports.delete = (req, res) => {
   VersionFile.deleteOne({ 
     _id: req.params.id,
-    owner: req.userId
+    userId: req.userId
   })
     .exec((err) => {
 
@@ -107,3 +118,20 @@ exports.delete = (req, res) => {
     })
 };
 
+
+exports.docomplete = (req, res) => {
+  VersionFile.updateOne({ _id: req.params.id }, { iscompleted: true })
+    .exec(async (err, versionFile) => {
+
+      if (err) {
+        res.status(500).send({ message: err, status: config.RES_MSG_UPDATE_FAIL });
+        return;
+      }
+      const newviersionFile = await VersionFile.findOne({ _id: req.params.id }).populate('userId');
+      return res.status(200).send({
+        message: config.RES_MSG_UPDATE_SUCCESS,
+        data: newviersionFile,
+        status: config.RES_STATUS_SUCCESS,
+      });
+    })
+};

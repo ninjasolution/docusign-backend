@@ -6,14 +6,14 @@ module.exports = (connection, autoIncrement) => {
 
   const VerificationSchema = new mongoose.Schema({
     capture: {
-      type: String,
+      type: Buffer,
     },
     signature: {
-      type: String,
+      type: Buffer,
     },
     version: {
       type: Number,
-      ref: "Version"
+      ref: "VersionFile"
     },
     userId: {
       type: Number,

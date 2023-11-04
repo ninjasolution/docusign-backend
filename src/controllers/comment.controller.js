@@ -96,10 +96,10 @@ exports.members = async (req, res) => {
   const version_id = req.params.version_id;
   try {
     const authorIds = (await Comment.find({ versionFile: version_id }))?.map(d => d.userId);
-    console.log(authorIds);
+    // console.log(authorIds);
     // const users = await User.find();
     const users = await User.find({ _id: { $in: authorIds } });
-    console.log(users);
+    // console.log(users);
     return res.status(200).send({
       message: config.RES_MSG_DATA_FOUND,
       data: users,

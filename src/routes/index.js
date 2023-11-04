@@ -89,6 +89,7 @@ router.get("/version/:id", middlewares.authJwt.verifyToken, versionFileControlle
 router.post("/version", middlewares.authJwt.verifyToken, fileController.upload.single('file'),  fileController.versioncreate, versionFileController.create);
 router.delete("/version/:id", middlewares.authJwt.verifyToken, versionFileController.delete);
 router.put("/version/:id", middlewares.authJwt.verifyToken, versionFileController.update);
+router.post("/version/:id", middlewares.authJwt.verifyToken, versionFileController.docomplete);
 
 // Comments
 router.get("/comments/:version_id", middlewares.authJwt.verifyToken, commentController.list);
@@ -111,6 +112,10 @@ router.put("/invitation/:id", middlewares.authJwt.verifyToken, invitationControl
 router.get("/notifications", middlewares.authJwt.verifyToken, invitationController.notificationlist);
 
 // Verifications
-router.get("/verifications", middlewares.authJwt.verifyToken, verificationController.list);
+router.get("/verification/:version_id", middlewares.authJwt.verifyToken, verificationController.list);
+router.post("/verification", middlewares.authJwt.verifyToken, verificationController.create);
+router.put("/verification/:id", middlewares.authJwt.verifyToken, verificationController.update);
+router.delete("/verification/:id", middlewares.authJwt.verifyToken, verificationController.delete);
+router.get("/verification/genword/:version_id", middlewares.authJwt.verifyToken, verificationController.genword);
 
 module.exports = router;

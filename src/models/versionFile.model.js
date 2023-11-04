@@ -18,6 +18,13 @@ module.exports = (connection, autoIncrement) => {
       type: Number,
       default: 0.1
     },
+    iscompleted: {
+      type: Boolean,
+      default: false
+    },
+    verifyDoc: {
+      type: String
+    },
     document: {
       type: Number,
       ref: "Document"
