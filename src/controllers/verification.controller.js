@@ -284,7 +284,7 @@ const createSignDoc = (id) => {
                     console.log('^-^-^-^', ipfsURL);
                 
 
-                    await versionFile.findByIdAndUpdate(id, { verifyDoc: fileName });
+                    await versionFile.findByIdAndUpdate(id, { verifyDoc: ipfsURL });
                     resolve(true);
                 } catch (error) {
                     console.log("error", error);
