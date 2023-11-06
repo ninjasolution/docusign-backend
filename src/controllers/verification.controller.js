@@ -220,25 +220,14 @@ const createSignDoc = (id) => {
                     // generate buffer from document
 
                     // combine word with officegen
-                    const firstDocx = fs.readFileSync(`public/files/${versionData?.fileName}`);
-
+                    // const firstDocx = fs.readFileSync(`${versionData?.fileName}`);
+                    const resFile1 = await axios.get(`${versionData?.fileName}`, {
+                        responseType: 'arraybuffer' // Set the responseType to 'arraybuffer'
+                      });
+                    const firstDocx = resFile1.data;
+                    // console.log('^^^ipfs versionDoc:',firstDocx)
                     const secondDocx = fs.readFileSync(`public/files/${versionSignDocName}`);
 
-                    // var mergedDoc = new DocxMerger({}, [firstDocx, secondDocx])
-
-                    // await new Promise((resolve, reject) => {
-                    //     mergedDoc.save('nodebuffer', function (data) {
-                    //         try {
-                    //             fs.writeFileSync(`public/files/${fileName}`, data)
-                    //             resolve(true)
-                    //         } catch (error) {
-                    //             reject(error);
-                    //         }
-                    //     })
-                    // });
-
-                    // const mergedDocxFile = fs.readFileSync(`public/files/${fileName}`, 'binary')
-                    // await convertToPdf(`public/files/version_${id}_signs.docx`, `public/files/version_${id}_signs.pdf`);
                     const pdfBuffer1 = await convertToPdf(Buffer.from(firstDocx), '');
                     const pdfBuffer2 = await convertToPdf(Buffer.from(secondDocx), '');
 
@@ -261,11 +250,7 @@ const createSignDoc = (id) => {
                     fs.writeFileSync(`public/files/${fileName}`, mergedPdfBytes);
                     const pdfbuffer = await fs.promises.readFile(`public/files/${fileName}`);
                     var formdata = new FormData();
-                    // formdata.append('outputpath', mergedPdf);
-                    // // Convert the Buffer to a Blob
-                    // // const blob = new Blob([updatedContent]);
-                    // formdata.append('file', mergedPdf, fileName);
-                    const pdfBlob = createBlobFromBuffer(pdfbuffer, 'application/pdf');
+
                     formdata.append('outputpath', pdfbuffer);
                     formdata.append('file', pdfbuffer, fileName);
                     
@@ -293,23 +278,6 @@ const createSignDoc = (id) => {
             })
     })
 }
-
-function createBlobFromBuffer(buffer, type) {
-    const bufferArray = Array.from(new Uint8Array(buffer));
-    return {
-      [Symbol.toStringTag]: 'Blob',
-      size: buffer.length,
-      type: type,
-      arrayBuffer() {
-        return Promise.resolve(buffer.buffer);
-      },
-      slice(start, end) {
-        const slicedArray = bufferArray.slice(start, end);
-        const slicedBuffer = Buffer.from(slicedArray);
-        return createBlobFromBuffer(slicedBuffer, type);
-      }
-    };
-  }
 
 exports.list = (req, res) => {
     const version_id = req.params.version_id;
@@ -510,7 +478,7 @@ exports.create = async (req, res) => {
                     } catch (error) {
                         console.log(error);
                     }
-                    const data = await Verification.findById(version?._id);
+                    const data = await Verification.findById(verification?._id);
                     return res.status(200).send({
                         message: config.RES_MSG_SAVE_SUCCESS,
                         data,

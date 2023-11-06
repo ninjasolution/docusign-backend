@@ -10,6 +10,7 @@ exports.list = async (req, res) => {
     const documentIds = (await Invitation.find({ target: req.userId})).map(d => d.documentId);
     const folderIds = (await Docuemnt.find({ _id: { $in: documentIds}})).map(d => d.folder)
     Folder.find({ $or: [{owner: req.userId}, { _id: { $in: folderIds }}] })
+    .sort({ createdAt: -1 })
     .exec((err, folders) => {
 
       if (err) {

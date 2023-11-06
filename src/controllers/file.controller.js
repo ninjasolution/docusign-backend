@@ -24,32 +24,35 @@ exports.create = async (req, res) => {
         if (err) console.log('ERROR: ' + err);
       });
     // }, 1000);
-    // console.log('^^^', req.file);
 
-    // var formdata = new FormData();
-    // // formdata.append('outputpath', req.file.data);
-    // formdata.append('file', req.file, fileName);
-    // const resFile = await axios({
-    //   method: "post",
-    //   url: process.env.IPFS_PATH,
-    //   data: formdata,
-    //   headers: {
-    //     'pinata_api_key': `${process.env.PINATA_API_KEY}`,
-    //     'pinata_secret_api_key': `${process.env.PINATA_API_SECRET}`,
-    //     "Content-Type": "multipart/form-data"
-    //   },
-    // });
-    // const ipfsURL = process.env.IPFS_CLOUD + resFile.data.IpfsHash;
-    // console.log('^-^-^-^', ipfsURL);
+    const filebuffer = await fs.promises.readFile(`public/files/${fileName}`);
+    var formdata = new FormData();
+
+    formdata.append('outputpath', filebuffer);
+    formdata.append('file', filebuffer, fileName);
+    
+    const resFile = await axios({
+      method: "post",
+      url: process.env.IPFS_PATH,
+      data: formdata,
+      headers: {
+        'pinata_api_key': `${process.env.PINATA_API_KEY}`,
+        'pinata_secret_api_key': `${process.env.PINATA_API_SECRET}`,
+        "Content-Type": "multipart/form-data"
+      },
+    });
+    // console.log('^-^-^-^', resFile);
+    const ipfsURL = process.env.IPFS_CLOUD + resFile.data.IpfsHash;
+    console.log('^-^-^-^fileupload:', ipfsURL);
 
     return res.send({
-      fileName: fileName
+      fileName: ipfsURL
     });
   }
 }
 
-exports.versioncreate = (req, res, next) => {
-  console.log('^^', req.file);
+exports.versioncreate = async (req, res, next) => {
+  // console.log('^^', req.file);
   if (!req.file) {
     console.log("No file is available!");
     return res.send({
@@ -63,12 +66,31 @@ exports.versioncreate = (req, res, next) => {
 
     // setTimeout(() => {
       fs.rename('./public/files/' + req.file.originalname, './public/files/' + fileName, function (err) {
-        if (err) console.log('ERROR: ' + err);
+        if (err) console.log('file upload ERROR: ' + err);
       });
     // }, 1000);
+    const filebuffer = await fs.promises.readFile(`public/files/${fileName}`);
+    var formdata = new FormData();
+
+    formdata.append('outputpath', filebuffer);
+    formdata.append('file', filebuffer, fileName);
+    
+    const resFile = await axios({
+      method: "post",
+      url: process.env.IPFS_PATH,
+      data: formdata,
+      headers: {
+        'pinata_api_key': `${process.env.PINATA_API_KEY}`,
+        'pinata_secret_api_key': `${process.env.PINATA_API_SECRET}`,
+        "Content-Type": "multipart/form-data"
+      },
+    });
+    // console.log('^-^-^-^', resFile);
+    const ipfsURL = process.env.IPFS_CLOUD + resFile.data.IpfsHash;
+    console.log('^-^-^-^fileupload:', ipfsURL);
 
     // Store file name in res.locals
-    res.locals.fileName = fileName;
+    res.locals.fileName = ipfsURL;
     
     next();
   }
