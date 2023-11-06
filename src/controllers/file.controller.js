@@ -75,8 +75,8 @@ exports.versioncreate = async (req, res, next) => {
     const fileName = `${new Date().getDate()}-${new Date().getMonth()}-${new Date().getFullYear()}-${new Date().getHours()}-${new Date().getMinutes()}-${new Date().getSeconds()}-${new Date().getMilliseconds()}.${fileType}`;
 
     // setTimeout(() => {
-      fs.rename('./public/files/' + req.file.originalname, './public/files/' + fileName, function (err) {
-        if (err) console.log('file upload ERROR: ' + err);
+      await fs.rename('./public/files/' + req.file.originalname, './public/files/' + fileName, function (err) {
+        if (err) console.log('version file upload ERROR: ' + err);
       });
     // }, 1000);
     const filebuffer = await fs.promises.readFile(`public/files/${fileName}`);
