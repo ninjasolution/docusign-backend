@@ -6,48 +6,58 @@ const axios = require("axios");
 const FormData = require('form-data');
 
 exports.create = async (req, res) => {
-
-  if (!req.file) {
-    console.log("No file is available!");
-    return res.send({
-      success: false
-    });
-
-  } else {
-
-    const words = req.file.originalname.split('.');
-    const fileType = words[words.length - 1];
-    const fileName = `${new Date().getDate()}-${new Date().getMonth()}-${new Date().getFullYear()}-${new Date().getHours()}-${new Date().getMinutes()}-${new Date().getSeconds()}-${new Date().getMilliseconds()}.${fileType}`;
-    var outputPath = './public/files/';
-    // setTimeout(() => {
-      fs.rename(outputPath + req.file.originalname, outputPath + fileName, function (err) {
-        if (err) console.log('ERROR: ' + err);
-      });
-    // }, 1000);
-
-    const filebuffer = await fs.promises.readFile(`public/files/${fileName}`);
-    var formdata = new FormData();
-
-    formdata.append('outputpath', filebuffer);
-    formdata.append('file', filebuffer, fileName);
+  try {
     
-    const resFile = await axios({
-      method: "post",
-      url: process.env.IPFS_PATH,
-      data: formdata,
-      headers: {
-        'pinata_api_key': `${process.env.PINATA_API_KEY}`,
-        'pinata_secret_api_key': `${process.env.PINATA_API_SECRET}`,
-        "Content-Type": "multipart/form-data"
-      },
-    });
-    // console.log('^-^-^-^', resFile);
-    const ipfsURL = process.env.IPFS_CLOUD + resFile.data.IpfsHash;
-    console.log('^-^-^-^fileupload:', ipfsURL);
-
+    if (!req.file) {
+      console.log("No file is available!");
+      return res.send({
+        success: false
+      });
+  
+    } else {
+      // console.log('req.file:', req.file);
+      const words = req.file.originalname.split('.');
+      const fileType = words[words.length - 1];
+      const fileName = `${new Date().getDate()}-${new Date().getMonth()}-${new Date().getFullYear()}-${new Date().getHours()}-${new Date().getMinutes()}-${new Date().getSeconds()}-${new Date().getMilliseconds()}.${fileType}`;
+      var outputPath = './public/files/';
+      // setTimeout(() => {
+        await fs.rename(outputPath + req.file.originalname, outputPath + fileName, function (err) {
+          if (err) console.log('ERROR: ' + err);
+        });
+      // }, 1000);
+  
+      const filebuffer = await fs.promises.readFile(`public/files/${fileName}`);
+      // const filebuffer = Buffer.from(req.file.data);
+      var formdata = new FormData();
+  
+      formdata.append('outputpath', filebuffer);
+      formdata.append('file', filebuffer, fileName);
+      
+      const resFile = await axios({
+        method: "post",
+        url: process.env.IPFS_PATH,
+        data: formdata,
+        headers: {
+          'pinata_api_key': `${process.env.PINATA_API_KEY}`,
+          'pinata_secret_api_key': `${process.env.PINATA_API_SECRET}`,
+          "Content-Type": "multipart/form-data"
+        },
+      });
+      // console.log('^-^-^-^', resFile);
+      const ipfsURL = process.env.IPFS_CLOUD + resFile.data.IpfsHash;
+      console.log('^-^-^-^fileupload:', ipfsURL);
+  
+      return res.send({
+        fileName: ipfsURL
+      });
+    }
+  } catch (error) {
+    console.log("profile image update error:", error);
     return res.send({
-      fileName: ipfsURL
+      success: false,
+      message: error.toString()
     });
+
   }
 }
 

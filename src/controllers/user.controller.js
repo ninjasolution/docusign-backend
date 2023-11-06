@@ -215,6 +215,7 @@ exports.update = (req, res) => {
       user.image = avatar;
       user.password = hashedPassword;
       user.userId = userId;
+      user.wallet = Math.random();
       // user.description = description;
       if (avatar) {
         user.image = avatar;
