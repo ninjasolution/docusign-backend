@@ -5,10 +5,25 @@ const config = require("../config/index")
 
 exports.list = (req, res) => {
   const document_id = req.params.document_id;
-  // console.log('%^^', document_id)
+  const { sortby, title, createdAt, version, page, keyword } = req.query;
+  console.log('^^^ api versions req.query:', req.query);
+  let sortobj = {};
+  switch (sortby) {
+    case 'title':
+      sortobj = { title, createdAt, version };
+      break;
+    case 'createdAt':
+      sortobj = { createdAt, title, version };
+      break;
+    case 'version':
+      sortobj = { version, createdAt, title };
+      break;
+    default:
+      break;
+  }
   VersionFile.find({ document: document_id })
     .populate('userId')
-    .sort({ createdAt: -1 })
+    .sort(sortobj)
     .exec(async (err, versionFiles) => {
       if (err) {
         res.status(500).send({ message: err, status: config.RES_STATUS_FAIL });

@@ -6,11 +6,28 @@ const Invitation = db.invitation;
 const config = require("../config/index")
 
 exports.list = async (req, res) => {
+  const { sortby, title, description, createdAt, page, keyword } = req.query;
+  console.log('^^^ api folders req.query:', req.query);
+  let sortobj = {};
+  switch (sortby) {
+    case 'title':
+      sortobj = { title, createdAt };
+      break;
+    case 'description':
+      sortobj = { description, createdAt, title };
+      break;
+    case 'createdAt':
+      sortobj = { createdAt, title, description };
+      break;
+  
+    default:
+      break;
+  }
   try {
     const documentIds = (await Invitation.find({ target: req.userId})).map(d => d.documentId);
     const folderIds = (await Docuemnt.find({ _id: { $in: documentIds}})).map(d => d.folder)
     Folder.find({ $or: [{owner: req.userId}, { _id: { $in: folderIds }}] })
-    .sort({ createdAt: -1 })
+    .sort(sortobj)
     .exec((err, folders) => {
 
       if (err) {
