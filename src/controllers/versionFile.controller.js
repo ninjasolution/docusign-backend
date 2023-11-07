@@ -1,11 +1,13 @@
 const db = require("../models");
 const VersionFile = db.versionFile;
 const Verification = db.verification;
-const config = require("../config/index")
+const Users = db.user
+const config = require("../config/index");
+const { cond } = require("lodash");
 
 exports.list = (req, res) => {
   const document_id = req.params.document_id;
-  const { sortby, title, createdAt, version, page, keyword } = req.query;
+  const { sortby, title, createdAt, version, editor, page, keyword } = req.query;
   console.log('^^^ api versions req.query:', req.query);
   let sortobj = {};
   switch (sortby) {
@@ -21,7 +23,11 @@ exports.list = (req, res) => {
     default:
       break;
   }
-  VersionFile.find({ document: document_id })
+  let condition = (editor) ?
+    { document: document_id } :
+    { document: document_id, userId: editor };
+
+  VersionFile.find(condition)
     .populate('userId')
     .sort(sortobj)
     .exec(async (err, versionFiles) => {
@@ -33,7 +39,7 @@ exports.list = (req, res) => {
       const updatedDocs = await Promise.all(versionFiles.map(async d => {
         // find verification info
         let verify;
-        if(d?._doc?.iscompleted || d?.iscompleted) {
+        if (d?._doc?.iscompleted || d?.iscompleted) {
           verify = await Verification.findOne({ version: (d?._doc?._id || d?._id), userId: req.userId })
         }
         return {
@@ -49,6 +55,47 @@ exports.list = (req, res) => {
       });
     })
 };
+
+exports.getEditors = async (req, res) => {
+  const document_id = req.params.document_id;
+  console.log("document_id", document_id);
+  try {
+    let userIds = await VersionFile.aggregate([
+      {
+        $match: {
+          document: Number(document_id)
+        }
+      },
+      {
+        $group: {
+          _id: {
+            userId: "$userId"
+          },
+          userId: {
+            $first: "$userId"
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: 1
+        }
+      }
+    ]).exec();
+    console.log(userIds);
+    userIds = userIds.map(d => d?.userId);
+    const users = await Users.find({ _id: { $in: userIds } });
+    return res.status(200).send({
+      message: config.RES_MSG_DATA_FOUND,
+      data: users,
+      status: config.RES_STATUS_SUCCESS,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: error?.message, status: config.RES_STATUS_FAIL });
+  }
+}
 
 exports.getById = (req, res) => {
   const id = req.params.id;
@@ -86,14 +133,14 @@ exports.create = async (req, res) => {
         console.log(err)
         return res.status(400).send({ message: err, status: "errors" });
       }
-      await VersionFile.updateMany({ 
-          document: req.body.document_id, 
-          $ne: { _id: version._id } 
-        }, 
-        { 
-          $set: { isselected: false }
+      await VersionFile.updateMany({
+        document: req.body.document_id,
+        _id: { $ne: version._id }
+      },
+        {
+          isselected: false
         });
-      let newversion = await VersionFile.findOne({ _id: version._id}).populate('userId');
+      let newversion = await VersionFile.findOne({ _id: version._id }).populate('userId');
       return res.status(200).send({
         message: config.RES_MSG_SAVE_SUCCESS,
         data: newversion,
@@ -131,7 +178,7 @@ exports.update = (req, res) => {
 
 
 exports.delete = (req, res) => {
-  VersionFile.deleteOne({ 
+  VersionFile.deleteOne({
     _id: req.params.id,
     userId: req.userId
   })
@@ -170,19 +217,29 @@ exports.docomplete = (req, res) => {
 exports.doselect = (req, res) => {
   try {
     VersionFile.updateOne({ _id: req.params.id }, { isselected: true })
-      .exec(async (err, versionFile) => {
-  
+      .exec(async (err, result) => {
+
         if (err) {
           res.status(500).send({ message: err, status: config.RES_MSG_UPDATE_FAIL });
           return;
         }
-        await VersionFile.updateMany({ 
-          document: versionFile.document, 
-          $ne: { _id: version._id } 
-        }, 
-        { 
-          $set: { isselected: false }
-        });
+
+        const versionFile = await VersionFile.findById(req.params.id);
+        
+        console.log(versionFile.document)
+        console.log("Number of matched documents:",
+          await VersionFile.count({ document: versionFile.document, _id: { $ne: versionFile._id } })
+        );
+        await VersionFile.updateMany({
+          document: versionFile.document,
+          _id: { $ne: versionFile._id }
+        },
+          {
+            isselected: false
+          });
+        console.log("Number of modified documents:",
+          await VersionFile.count({ document: versionFile.document, isselected: false })
+        );
         const newviersionFile = await VersionFile.findOne({ _id: req.params.id }).populate('userId');
         return res.status(200).send({
           message: config.RES_MSG_UPDATE_SUCCESS,
@@ -196,5 +253,5 @@ exports.doselect = (req, res) => {
       data: newviersionFile,
       status: config.RES_STATUS_FAIL,
     });
-}
+  }
 };
