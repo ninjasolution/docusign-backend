@@ -23,10 +23,10 @@ exports.list = (req, res) => {
     default:
       break;
   }
-  let condition = (editor) ?
+  let condition = editor < 0 ?
     { document: document_id } :
     { document: document_id, userId: editor };
-
+  // console.log('^^^condition: ', condition);
   VersionFile.find(condition)
     .populate('userId')
     .sort(sortobj)
