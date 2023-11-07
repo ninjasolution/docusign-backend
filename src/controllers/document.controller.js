@@ -41,11 +41,13 @@ exports.list = async (req, res) => {
         const updateddocuments = await Promise.all(
           documents.map(async d => {
             const count = await VersionFile.count({ document: (d._doc?._id || d._id) })
+            const completeVersion = await VersionFile.findOne({ document: (d._doc?._id || d._id), iscompleted: true });
             const lastVersion = await VersionFile.findOne({ document: (d._doc?._id || d._id) }).sort({ createdAt: -1 }).limit(1);
             return {
               ...(d._doc || d),
               count,
-              lastVersion
+              lastVersion,
+              completeVersion
             }
           })
         )
@@ -123,9 +125,13 @@ exports.recentlist = async (req, res) => {
         const updateddocuments = await Promise.all(
           documents.map(async d => {
             const count = await VersionFile.count({ document: (d._doc?._id || d._id) })
+            const completeVersion = await VersionFile.findOne({ document: (d._doc?._id || d._id), iscompleted: true });
+            const lastVersion = await VersionFile.findOne({ document: (d._doc?._id || d._id) }).sort({ createdAt: -1 }).limit(1);
             return {
               ...(d._doc || d),
-              count
+              count,
+              completeVersion,
+              lastVersion
             }
           })
         )

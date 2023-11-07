@@ -70,27 +70,43 @@ exports.getById = (req, res) => {
 };
 
 
-exports.create = (req, res) => {
+exports.create = async (req, res) => {
   // console.log('^^', req.body);
-  const versionFile = new VersionFile({
-    document: req.body.document_id,
-    ...req.body,
-    fileName: res.locals.fileName,
-    userId: req.userId
-  });
-  versionFile.save(async (err, version) => {
-    if (err) {
-      console.log(err)
-      return res.status(400).send({ message: err, status: "errors" });
-    }
-
-    let newversion = await VersionFile.findOne({ _id: version._id}).populate('userId');
-    return res.status(200).send({
-      message: config.RES_MSG_SAVE_SUCCESS,
-      data: newversion,
-      status: config.RES_STATUS_SUCCESS,
+  try {
+    const versionFile = new VersionFile({
+      document: req.body.document_id,
+      ...req.body,
+      fileName: res.locals.fileName,
+      userId: req.userId,
+      isselected: true,
+      iscompleted: false
     });
-  });
+    versionFile.save(async (err, version) => {
+      if (err) {
+        console.log(err)
+        return res.status(400).send({ message: err, status: "errors" });
+      }
+      await VersionFile.updateMany({ 
+          document: req.body.document_id, 
+          $ne: { _id: version._id } 
+        }, 
+        { 
+          $set: { isselected: false }
+        });
+      let newversion = await VersionFile.findOne({ _id: version._id}).populate('userId');
+      return res.status(200).send({
+        message: config.RES_MSG_SAVE_SUCCESS,
+        data: newversion,
+        status: config.RES_STATUS_SUCCESS,
+      });
+    });
+  } catch (error) {
+    return res.status(200).send({
+      message: config.RES_MSG_SAVE_FAIL,
+      data: newversion,
+      status: config.RES_STATUS_FAIL,
+    });
+  }
 }
 
 
@@ -149,4 +165,36 @@ exports.docomplete = (req, res) => {
         status: config.RES_STATUS_SUCCESS,
       });
     })
+};
+
+exports.doselect = (req, res) => {
+  try {
+    VersionFile.updateOne({ _id: req.params.id }, { isselected: true })
+      .exec(async (err, versionFile) => {
+  
+        if (err) {
+          res.status(500).send({ message: err, status: config.RES_MSG_UPDATE_FAIL });
+          return;
+        }
+        await VersionFile.updateMany({ 
+          document: versionFile.document, 
+          $ne: { _id: version._id } 
+        }, 
+        { 
+          $set: { isselected: false }
+        });
+        const newviersionFile = await VersionFile.findOne({ _id: req.params.id }).populate('userId');
+        return res.status(200).send({
+          message: config.RES_MSG_UPDATE_SUCCESS,
+          data: newviersionFile,
+          status: config.RES_STATUS_SUCCESS,
+        });
+      })
+  } catch (error) {
+    return res.status(200).send({
+      message: config.RES_MSG_UPDATE_FAIL,
+      data: newviersionFile,
+      status: config.RES_STATUS_FAIL,
+    });
+}
 };

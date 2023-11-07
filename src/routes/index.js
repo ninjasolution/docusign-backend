@@ -90,6 +90,7 @@ router.post("/version", middlewares.authJwt.verifyToken, fileController.upload.s
 router.delete("/version/:id", middlewares.authJwt.verifyToken, versionFileController.delete);
 router.put("/version/:id", middlewares.authJwt.verifyToken, versionFileController.update);
 router.post("/version/:id", middlewares.authJwt.verifyToken, versionFileController.docomplete);
+router.post("/versionselect/:id", middlewares.authJwt.verifyToken, versionFileController.doselect);
 
 // Comments
 router.get("/comments/:version_id", middlewares.authJwt.verifyToken, commentController.list);
