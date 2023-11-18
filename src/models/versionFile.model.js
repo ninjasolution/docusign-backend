@@ -18,6 +18,10 @@ module.exports = (connection, autoIncrement) => {
       type: Number,
       default: 0.1
     },
+    isselected: {
+      type: Boolean,
+      default: false
+    },
     iscompleted: {
       type: Boolean,
       default: false

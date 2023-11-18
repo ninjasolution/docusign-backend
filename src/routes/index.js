@@ -85,11 +85,13 @@ router.get("/recentdocuments", middlewares.authJwt.verifyToken, documentControll
 
 // Version
 router.get("/versions/:document_id", middlewares.authJwt.verifyToken, versionFileController.list);
+router.get("/version/editors/:document_id", middlewares.authJwt.verifyToken, versionFileController.getEditors);
 router.get("/version/:id", middlewares.authJwt.verifyToken, versionFileController.getById);
 router.post("/version", middlewares.authJwt.verifyToken, fileController.upload.single('file'),  fileController.versioncreate, versionFileController.create);
 router.delete("/version/:id", middlewares.authJwt.verifyToken, versionFileController.delete);
 router.put("/version/:id", middlewares.authJwt.verifyToken, versionFileController.update);
 router.post("/version/:id", middlewares.authJwt.verifyToken, versionFileController.docomplete);
+router.post("/versionselect/:id", middlewares.authJwt.verifyToken, versionFileController.doselect);
 
 // Comments
 router.get("/comments/:version_id", middlewares.authJwt.verifyToken, commentController.list);

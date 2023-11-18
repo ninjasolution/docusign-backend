@@ -6,6 +6,21 @@ const VersionFile = db.versionFile;
 const config = require("../config/index")
 
 exports.list = async (req, res) => {
+  const { sortby, title, createdAt, page, keyword } = req.query;
+  console.log('^^^ api document req.query:', req.query);
+  let sortobj = {};
+  switch (sortby) {
+    case 'title':
+      sortobj = { title, createdAt };
+      break;
+    case 'createdAt':
+      sortobj = { createdAt, title };
+      break;
+  
+    default:
+      break;
+  }
+
   const documentIds = (await Invitation.find({ target: req.userId })).map(d => d.documentId)
   const folder_id = req.params.folder_id;
   Document.find({
@@ -15,7 +30,7 @@ exports.list = async (req, res) => {
       { owner: req.userId }
     ]
   })
-    .sort({ createdAt: -1 })
+    .sort(sortobj)
     .exec(async (err, documents) => {
 
       if (err) {
@@ -26,11 +41,13 @@ exports.list = async (req, res) => {
         const updateddocuments = await Promise.all(
           documents.map(async d => {
             const count = await VersionFile.count({ document: (d._doc?._id || d._id) })
+            const completeVersion = await VersionFile.findOne({ document: (d._doc?._id || d._id), iscompleted: true });
             const lastVersion = await VersionFile.findOne({ document: (d._doc?._id || d._id) }).sort({ createdAt: -1 }).limit(1);
             return {
               ...(d._doc || d),
               count,
-              lastVersion
+              lastVersion,
+              completeVersion
             }
           })
         )
@@ -72,6 +89,23 @@ exports.getById = (req, res) => {
 
 
 exports.recentlist = async (req, res) => {
+  const { sortby, title, createdAt, version, page } = req.query;
+  console.log('^^^ api recents req.query:', req.query);
+
+  let sortobj = {};
+  switch (sortby) {
+    case 'title':
+      sortobj = { title, createdAt, version };
+      break;
+    case 'createdAt':
+      sortobj = { createdAt, title, version };
+      break;
+    case 'version':
+      sortobj = { version, createdAt, title };
+      break;
+    default:
+      break;
+  }
   const documentIds = (await Invitation.find({ target: req.userId })).map(d => d.documentId)
   Document.find({
     $or: [
@@ -79,7 +113,7 @@ exports.recentlist = async (req, res) => {
       { owner: req.userId }
     ]
   })
-    .sort({ createdAt: -1 })
+    .sort(sortobj)
     .limit(20)
     .exec(async (err, documents) => {
 
@@ -91,9 +125,13 @@ exports.recentlist = async (req, res) => {
         const updateddocuments = await Promise.all(
           documents.map(async d => {
             const count = await VersionFile.count({ document: (d._doc?._id || d._id) })
+            const completeVersion = await VersionFile.findOne({ document: (d._doc?._id || d._id), iscompleted: true });
+            const lastVersion = await VersionFile.findOne({ document: (d._doc?._id || d._id) }).sort({ createdAt: -1 }).limit(1);
             return {
               ...(d._doc || d),
-              count
+              count,
+              completeVersion,
+              lastVersion
             }
           })
         )
