@@ -16,6 +16,15 @@ module.exports = (connection, autoIncrement) => {
     email: {
       type: String,
     },
+    facebookLink: {
+      type: String,
+    },
+    linkedInLink: {
+      type: String,
+    },
+    bio: {
+      type: String,
+    },
     status: {
       type: Number,
     },

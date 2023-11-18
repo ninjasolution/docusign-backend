@@ -14,8 +14,8 @@ const options = {
 };
 
 db.mongoose = mongoose;
-// db.connection = db.mongoose.createConnection(`mongodb://us8sa7hnjuwkesndd7ev:f1j43STB9r1u6B2gvH9@bkbjrxg0pzgk6tkcugbi-mongodb.services.clever-cloud.com:2511/bkbjrxg0pzgk6tkcugbi`)
-db.connection = db.mongoose.createConnection(`mongodb://127.0.0.1:27017/docu-sign`)
+db.connection = db.mongoose.createConnection(`mongodb://us8sa7hnjuwkesndd7ev:f1j43STB9r1u6B2gvH9@bkbjrxg0pzgk6tkcugbi-mongodb.services.clever-cloud.com:2511/bkbjrxg0pzgk6tkcugbi`)
+// db.connection = db.mongoose.createConnection(`mongodb://127.0.0.1:27017/docu-sign`)
 autoIncrement.initialize(db.connection);
 
 db.user = require("./user.model")(db.connection, autoIncrement);
