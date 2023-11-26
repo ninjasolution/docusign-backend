@@ -69,8 +69,8 @@ exports.list = async (req, res) => {
 
 exports.getById = (req, res) => {
   Document.findOne({ _id: req.params.id })
-    .populate("owner", "name email")
-    .populate("folder", "title description createdAt")
+    .populate("owner", "-_id name email")
+    .populate("folder", "-_id title description createdAt")
     .exec((err, document) => {
       if (err) {
         res.status(500).send({ message: err, status: config.RES_STATUS_FAIL });
@@ -82,7 +82,7 @@ exports.getById = (req, res) => {
       }
 
       Invitation.find({documentId: req.params.id})
-      .populate("target", "name email")
+      .populate("target", "-_id name email")
       .exec((err, users) => {
 
         var stakeholders = [];
