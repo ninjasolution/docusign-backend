@@ -16,7 +16,7 @@ exports.list = async (req, res) => {
     case 'createdAt':
       sortobj = { createdAt, title };
       break;
-  
+
     default:
       break;
   }
@@ -69,6 +69,8 @@ exports.list = async (req, res) => {
 
 exports.getById = (req, res) => {
   Document.findOne({ _id: req.params.id })
+    .populate("owner", "name email")
+    .populate("folder", "title description createdAt")
     .exec((err, document) => {
       if (err) {
         res.status(500).send({ message: err, status: config.RES_STATUS_FAIL });
@@ -79,11 +81,32 @@ exports.getById = (req, res) => {
         return res.status(404).send({ message: config.RES_MSG_DATA_NOT_FOUND });
       }
 
-      return res.status(200).send({
-        message: config.RES_MSG_DATA_FOUND,
-        data: document,
-        status: config.RES_STATUS_SUCCESS,
-      });
+      Invitation.find({documentId: req.params.id})
+      .populate("target", "name email")
+      .exec((err, users) => {
+
+        var stakeholders = [];
+        if(!err) {
+          stakeholders = users.map(item => item.target)
+        }
+
+        console.log(document)
+        return res.status(200).send({
+          message: config.RES_MSG_DATA_FOUND,
+          data: {
+            _id: document._id,
+            title: document.title,
+            description: document.description,
+            folder: document.folder,
+            owner: document.owner,
+            updatedAt: document.updatedAt,
+            createdAt: document.createdAt,
+            stakeholders,
+          },
+          status: config.RES_STATUS_SUCCESS,
+        });
+      })
+
     })
 };
 

@@ -112,6 +112,7 @@ exports.get = (req, res) => {
   var url = path.join(__dirname, './public/files/')
   res.sendFile(`${url}/${req.params.fileName}`);
 }
+
 exports.delete = (req, res) => {
   fs.unlink(`./public/files/${req.params.fileName}`, (err) => {
     if (err) return res.status(500).send(err);
