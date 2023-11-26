@@ -11,6 +11,10 @@ const Transaction = db.transaction;
 const axios = require("axios").default;
 const bcrypt = require("bcryptjs");
 
+exports.getInitialStatus = function(req,res ) {
+  return res.send({ message: "Initial", status: RES_STATUS_SUCCESS });
+}
+
 exports.create = async (req, res) => {
 
   const user = new User(req.body);

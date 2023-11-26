@@ -58,6 +58,7 @@ router.post("/file", middlewares.authJwt.verifyToken, fileController.upload.sing
 
 //Country
 router.get("/country/list", countryController.list)
+router.get("/initial", middlewares.authJwt.verifyToken, userController.getInitialStatus)
 
 //Comment
 router.get("/comment/list", commentController.list)
