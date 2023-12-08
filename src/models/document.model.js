@@ -19,6 +19,10 @@ module.exports = (connection, autoIncrement) => {
       type: Number,
       ref: "VersionFile"
     },
+    token: {
+      type: Number,
+      default: -1
+    },
     owner: {
       type: Number,
       ref: "User"

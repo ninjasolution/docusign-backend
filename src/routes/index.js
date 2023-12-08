@@ -80,6 +80,7 @@ router.get("/document/:id", middlewares.authJwt.verifyToken, documentController.
 router.post("/document", middlewares.authJwt.verifyToken, documentController.create);
 router.delete("/document/:id", middlewares.authJwt.verifyToken, documentController.delete);
 router.put("/document/:id", middlewares.authJwt.verifyToken, documentController.update);
+router.put("/document/token/:id", middlewares.authJwt.verifyToken, documentController.setToken);
 router.get("/counttotalfolders", middlewares.authJwt.verifyToken, documentController.counttotallist);
 router.get("/countinvitedfolders", middlewares.authJwt.verifyToken, documentController.countinvitedlist);
 router.get("/recentdocuments", middlewares.authJwt.verifyToken, documentController.recentlist);

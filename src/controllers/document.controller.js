@@ -213,6 +213,23 @@ exports.update = (req, res) => {
     })
 };
 
+exports.setToken = (req, res) => {
+  Document.updateOne({ _id: req.params.id }, { token: req.body.token })
+    .exec((err, Document) => {
+
+      if (err) {
+        res.status(500).send({ message: err, status: config.RES_MSG_UPDATE_FAIL });
+        return;
+      }
+
+      return res.status(200).send({
+        message: config.RES_MSG_UPDATE_SUCCESS,
+        data: Document,
+        status: config.RES_STATUS_SUCCESS,
+      });
+    })
+};
+
 
 exports.delete = (req, res) => {
   Document.deleteOne({ _id: req.params.id })
