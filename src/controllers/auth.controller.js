@@ -9,8 +9,7 @@ const nodemailer = require("nodemailer");
 const crypto = require("crypto")
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-
-const service = require("../service");
+const service = require("../service/index")
 const { securityCode, SUBADMIN, USER, RES_MSG_SUCESS, RES_STATUS_FAIL, PROJECT_STATUS_COMPLETED, PROJECT_STATUS_PENDING, RES_MSG_FAIL, RES_STATUS_SUCCESS, RES_MSG_SAVE_SUCCESS } = require("../config");
 
 exports.signup = async (req, res) => {
@@ -26,9 +25,6 @@ exports.signup = async (req, res) => {
     userId,
     password: hashedPassword,
   };
-  
-
-  console.log(req.body)
   const user = new User(newUser);
 
   if (role) {
@@ -89,13 +85,11 @@ exports.signup = async (req, res) => {
 };
 
 exports.signin = async (req, res) => {
-  // const address = await service.recoverSignature(req.body.nonce, req.body.signature)
-  // console.log(req.body)
 
   const { email, password } = req.body;
 
   // Check if the provided email exists in the User collection
-  const user = await User.findOne({email : email}).populate("role").exec();
+  const user = await User.findOne({ email: email }).populate("role").exec();
   if (!user) {
     return res.status(404).json({ status: 'User not found' });
   }
@@ -237,8 +231,8 @@ exports.signout = async (req, res) => {
 exports.profile = async (req, res) => {
   try {
     const { id } = req.body.id;
-    const user = await User.findOne({_id : id}).populate("role").exec();
-    if(!user) return res.status(200).send({
+    const user = await User.findOne({ _id: id }).populate("role").exec();
+    if (!user) return res.status(200).send({
       message: "User Not found",
       status: RES_MSG_FAIL
     });
@@ -254,8 +248,8 @@ exports.profile = async (req, res) => {
 exports.updateprofile = async (req, res) => {
   try {
     const { id } = req.body.id;
-    const user = await User.findOne({_id : id}).populate("role").exec();
-    if(!user) return res.status(200).send({
+    const user = await User.findOne({ _id: id }).populate("role").exec();
+    if (!user) return res.status(200).send({
       message: "User Not found",
       status: RES_MSG_FAIL
     });
@@ -272,7 +266,7 @@ exports.forgot = async (req, res, next) => {
   const token = (await promisify(crypto.randomBytes)(20)).toString('hex');
   User.findOne({ email: req.body.email }, {}, async function (err, user) {
     if (err) {
-      return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+      return res.status(500).send({ message: err, status: RES_STATUS_FAIL });
     }
     if (!user) {
       return res.status(200).send({ message: "There is no user with this email", status: RES_STATUS_FAIL });
@@ -281,52 +275,51 @@ exports.forgot = async (req, res, next) => {
     user.resetPasswordToken = token;
     user.resetPasswordExpires = Date.now() + 3600000;
 
-    const message = `<p>You are receiving this because you (or someone else) have requested the reset of the password for your account.
-        Please click on the following link, or paste this into your browser to complete the process:
-        <a href="http://${req.headers.host}/reset/${token}" target="_blank">link</a>
-        If you did not request this, please ignore this email and your password will remain unchanged.</p>`
+    user.save((err) => {
+      if (!err) {
+        service.resetPassword({ email: req.body.email, code: token }).then((result) => {
+          return {
+            message: "success",
+          };
+        });
+      } else {
+        return res.status(500).send({ message: err, status: RES_STATUS_FAIL });
 
-    try {
-      await sendEmail(user.email, "Reset Password", message)
-
-      return res.status(200).send({ resettoken: token, status: RES_MSG_SUCESS });
-    } catch {
-      return res.status(200).send({ message: "There is no user with this email.", status: RES_STATUS_FAIL });
-    }
+      }
+    })
   })
 }
 
 exports.reset = async (req, res) => {
+
   User.findOne({
-    _id: req.userId
+    resetPasswordToken: req.params.token
   })
-    .populate("role", "name")
-    .exec((err, user) => {
+    .exec(async (err, user) => {
       if (err) {
-        res.status(200).send({ message: "Incorrect id or password", status: RES_STATUS_FAIL });
+        res.status(500).send({ message: err, status: RES_STATUS_FAIL });
         return;
       }
 
       if (!user) {
-        return res.status(200).send({ message: "Incorrect id or password", status: RES_STATUS_FAIL });
+        return res.status(404).send({ message: "Incorrect token", status: RES_STATUS_FAIL });
       }
 
-      if (!(user.resetPasswordExpires > Date.now()) && crypto.timingSafeEqual(Buffer.from(user.resetPasswordToken), Buffer.from(req.params.token))) {
-        return res.status(200).send({ message: "Password reset token is invalid or has expired." });
+      if (!(user.resetPasswordExpires > Date.now())) {
+        return res.status(400).send({ message: "Password reset token is invalid or has expired." });
       }
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
 
-      user.password = req.body.password;
+      user.password = hashedPassword;
       user.resetPasswordToken = null;
       user.resetPasswordExpires = 0;
 
       user.save(async (err, rUser) => {
         if (err) {
-          res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+          res.status(500).send({ message: err, status: RES_STATUS_FAIL });
           return;
         }
-        const message = `<p>This is a confirmation that the password for your account "${user.email}" has just been changed. </p>`
-
-        await sendEmail(user.email, "Reset Password", message)
         return res.send({ message: `Success! Your password has been changed.`, status: RES_STATUS_FAIL });
 
       });

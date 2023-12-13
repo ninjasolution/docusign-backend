@@ -9,6 +9,7 @@
   "author": "ninjasolution",
   "license": "ISC",
   "dependencies": {
+    "@sendgrid/mail": "^8.1.0",
     "@uniswap/permit2-sdk": "^1.2.0",
     "axios": "^1.6.0",
     "bcryptjs": "^2.4.3",

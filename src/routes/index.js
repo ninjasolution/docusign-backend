@@ -25,8 +25,8 @@ router.get("/auth/verifyPhoneNumber/:id/:token", authController.verifyPhoneNumbe
 router.post("/auth/forgot", authController.forgot)
 router.get("/auth/requestEmailVerify", middlewares.authJwt.verifyToken, authController.requestEmailVerify)
 router.get("/auth/requestPhoneVerify", middlewares.authJwt.verifyToken, authController.requestPhoneVerify)
-router.get("/auth/rest/:token", authController.reset)
-router.put("/auth/rest", authController.changePassword)
+router.post("/auth/reset/:token", authController.reset)
+router.put("/auth/reset", authController.changePassword)
 
 router.put("/super-admin/approve", userController.approve);
 router.post("/admin/create", authController.signup);
