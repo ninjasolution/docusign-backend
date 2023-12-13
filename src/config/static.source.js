@@ -1,4 +1,3 @@
-const { INFRA_KEY } = require(".");
 
 module.exports = {
   countries: [

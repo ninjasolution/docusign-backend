@@ -1,9 +1,7 @@
-const { ethers } = require("ethers");
 const { SUBADMIN, RES_STATUS_SUCCESS, PLATFORM_TYPE_STAKING_IDO, TX_TYPE_DEPOSIT, TX_TYPE_LOCK, RES_STATUS_FAIL, RES_MSG_DATA_NOT_FOUND, USER_STATUS_PENDING, USER_STATUS_APPROVE } = require("../config");
 const { requestBotAPI } = require("../helpers");
 const db = require("../models");
 const { getRndInteger, getTier } = require("../service");
-const { tiers } = require("../config/static.source");
 const User = db.user;
 const Role = db.role;
 const Nonce = db.nonce;
@@ -94,6 +92,21 @@ exports.getUser = (req, res) => {
       }
 
       return res.status(200).send({ status: RES_STATUS_SUCCESS, data: user });
+    })
+};
+
+exports.checkUserByNameAndEmail = (req, res) => {
+  User.findOne({ $or:[{ email: req.params.id}, { userId: req.params.id}, ] })
+    .exec((err, user) => {
+
+      if (err) {
+        return res.status(500).send({ message: err });
+      }
+
+      if (!user) {
+        return res.status(200).send({ message: "User Not found.", status: 0 });
+      }
+      return res.status(200).send({ message: "User found.", status: 1 });
     })
 };
 
@@ -270,8 +283,6 @@ exports.delete = (req, res) => {
     })
 };
 
-
-
 exports.dashboard = (req, res) => {
 
   try {
@@ -361,63 +372,3 @@ exports.getpaymentinfo = (req, res) => {
     })
 }
 
-exports.withdraw = (req, res) => {
-  User.findOne({
-    _id: req.userId
-  })
-    .exec(async (err, user) => {
-      if (err) {
-        res.status(500).send({ message: "Incorrect id or password", status: RES_STATUS_FAIL });
-        return;
-      }
-
-      if (!user) {
-        return res.status(404).send({ message: "User doesn't exist", status: RES_STATUS_FAIL });
-      }
-
-      if (!user.withdrawAddress) {
-        return res.status(400).send({ message: "Please put withdraw address", status: RES_STATUS_FAIL });
-      }
-
-      try {
-
-        var data = JSON.stringify({
-          userId: 2250,
-          authCode: "1ee9394573062b6dbe275d9c570d52f4",
-          amount: req.body.amount
-        });
-
-        await requestBotAPI("post", "withdrawal", data)
-
-
-      } catch (error) {
-        return res.status(500).send({ message: "The amount exceeds the total funds", status: RES_STATUS_FAIL });
-      }
-
-      try {
-
-        new Transaction({
-          user: user._id,
-          type: "Withdraw",
-          amount: req.body.amount,
-          status: RES_STATUS_SUCCESS,
-          paymentMethod: "Crypto"
-        }).save(async (err, transaction) => {
-
-          if (err) {
-            console.log("error", err);
-            return res.status(500).send({ message: err, status: RES_STATUS_FAIL });
-          }
-
-          user.transactions.push(transaction);
-          await user.save();
-          return res.status(200).send({ message: `${req.body.amount} USDC is withdrawn to ${user.withdrawAddress}`, status: RES_STATUS_SUCCESS });
-
-        });
-
-      } catch (error) {
-        return res.status(500).send({ message: error, status: RES_STATUS_FAIL });
-      }
-    })
-
-}

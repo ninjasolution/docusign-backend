@@ -99,7 +99,7 @@ exports.notificationlist = (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const user = await User.findOne({ email: req.body.username });
+  const user = await User.findOne({ $or: [{email: req.body.username}, {userId: req.body.username}] });
   if(user) {
     const existinvitation = await Invitation.findOne({
       owner: req.userId,
