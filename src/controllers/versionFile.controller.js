@@ -8,7 +8,6 @@ const { cond } = require("lodash");
 exports.list = (req, res) => {
   const document_id = req.params.document_id;
   const { sortby, title, createdAt, version, editor, page, keyword } = req.query;
-  console.log('^^^ api versions req.query:', req.query);
   let sortobj = {};
   switch (sortby) {
     case 'title':
@@ -132,8 +131,8 @@ exports.create = async (req, res) => {
     const _version = await VersionFile.findOne({
       document: req.body.document_id,
     }).sort({ createdAt: -1 }).limit(1);
-    if(_version) {
-      if(vMm && Number(vMm) > Number(_version?.version)) {
+    if (_version) {
+      if (vMm && Number(vMm) > Number(_version?.version)) {
         versionFile.version = Number(vMm).toFixed(1);
       } else {
         versionFile.version = (Number(_version?.version) + 0.1).toFixed(1)
@@ -161,7 +160,7 @@ exports.create = async (req, res) => {
       });
     });
   } catch (error) {
-    return res.status(200).send({
+    return res.status(500).send({
       message: config.RES_MSG_SAVE_FAIL,
       data: newversion,
       status: config.RES_STATUS_FAIL,
@@ -238,7 +237,7 @@ exports.doselect = (req, res) => {
         }
 
         const versionFile = await VersionFile.findById(req.params.id);
-        
+
         console.log(versionFile.document)
         console.log("Number of matched documents:",
           await VersionFile.count({ document: versionFile.document, _id: { $ne: versionFile._id } })

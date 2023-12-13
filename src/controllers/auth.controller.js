@@ -30,19 +30,17 @@ exports.signup = async (req, res) => {
   if (role) {
     Role.findOne({ name: req.body.role }, async (err, role) => {
       if (err) {
-        return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+        return res.status(500).send({ message: err, status: RES_STATUS_FAIL });
       }
 
       user.role = role?._id;
       user.status = 0;
       user.wallet = Math.random();
 
-      // console.log('^-^user: ', user)
-
       user.save((err, user) => {
         if (err) {
           console.log('^^Error', err)
-          return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+          return res.status(500).send({ message: err, status: RES_STATUS_FAIL });
         }
         return res.status(200).send({ message: RES_MSG_SAVE_SUCCESS, status: RES_MSG_SUCESS });
       });
@@ -197,7 +195,7 @@ exports.verifyEmail = async (req, res) => {
 exports.verifyPhoneNumber = async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.userId });
-    if (!user) return res.status(200).send({ message: "An error occured", status: RES_STATUS_FAIL });
+    if (!user) return res.status(404).send({ message: "An error occured", status: RES_STATUS_FAIL });
     if (user.phoneVerified) return res.send({ message: "phone verified sucessfully", status: RES_MSG_SUCESS });
 
     const token = await Token.findOne({
@@ -205,7 +203,7 @@ exports.verifyPhoneNumber = async (req, res) => {
       type: "SMS",
       token: req.params.token,
     });
-    if (!token) return res.status(200).send({ message: "An error occured", status: RES_STATUS_FAIL });
+    if (!token) return res.status(404).send({ message: "An error occured", status: RES_STATUS_FAIL });
 
     await User.updateOne({ _id: user._id, phoneVerified: true });
     await Token.findByIdAndRemove(token._id);
@@ -232,7 +230,7 @@ exports.profile = async (req, res) => {
   try {
     const { id } = req.body.id;
     const user = await User.findOne({ _id: id }).populate("role").exec();
-    if (!user) return res.status(200).send({
+    if (!user) return res.status(404).send({
       message: "User Not found",
       status: RES_MSG_FAIL
     });
@@ -249,7 +247,7 @@ exports.updateprofile = async (req, res) => {
   try {
     const { id } = req.body.id;
     const user = await User.findOne({ _id: id }).populate("role").exec();
-    if (!user) return res.status(200).send({
+    if (!user) return res.status(404).send({
       message: "User Not found",
       status: RES_MSG_FAIL
     });
@@ -269,7 +267,7 @@ exports.forgot = async (req, res, next) => {
       return res.status(500).send({ message: err, status: RES_STATUS_FAIL });
     }
     if (!user) {
-      return res.status(200).send({ message: "There is no user with this email", status: RES_STATUS_FAIL });
+      return res.status(404).send({ message: "There is no user with this email", status: RES_STATUS_FAIL });
     }
 
     user.resetPasswordToken = token;
@@ -328,33 +326,36 @@ exports.reset = async (req, res) => {
 
 exports.changePassword = (req, res) => {
   User.findOne({
-    _id: req.userId
+    _id: req.body.userId
   })
-    .exec((err, user) => {
+    .exec(async (err, user) => {
       if (err) {
-        res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+        res.status(500).send({ message: err, status: RES_STATUS_FAIL });
         return;
       }
 
       if (!user) {
-        return res.status(200).send({ message: "Incorrect id or password", status: RES_STATUS_FAIL });
+        return res.status(404).send({ message: "Incorrect id", status: RES_STATUS_FAIL });
       }
 
-      var passwordIsValid = bcrypt.compareSync(
-        req.body.password,
-        user.password
-      );
+      // var passwordIsValid = bcrypt.compareSync(
+      //   req.body.password,
+      //   user.password
+      // );
 
-      if (!passwordIsValid) {
-        return res.status(200).send({ message: "Incorrect id or password", status: RES_STATUS_FAIL });
-      }
+      // if (!passwordIsValid) {
+      //   return res.status(400).send({ message: "password", status: RES_STATUS_FAIL });
+      // }
 
-      user.password = req.body.newPassword;
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(req.body.newPassword, saltRounds);
+
+      user.password = hashedPassword
       user.changePasswordAt = Date.now();
 
-      user.save(async (err, rUser) => {
+      user.save(async (err) => {
         if (err) {
-          res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+          res.status(500).send({ message: err, status: RES_STATUS_FAIL });
           return;
         }
 
@@ -372,12 +373,12 @@ exports.requestEmailVerify = (req, res) => {
   })
     .exec(async (err, user) => {
       if (err) {
-        res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+        res.status(500).send({ message: err, status: RES_STATUS_FAIL });
         return;
       }
 
       if (!user) {
-        return res.status(200).send({ message: "Not exist user", status: RES_STATUS_FAIL });
+        return res.status(404).send({ message: "Not exist user", status: RES_STATUS_FAIL });
       }
 
       let token = await new Token({

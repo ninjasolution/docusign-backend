@@ -7,7 +7,6 @@ const config = require("../config/index")
 
 exports.list = async (req, res) => {
   const { sortby, title, description, createdAt, page, keyword } = req.query;
-  console.log('^^^ api folders req.query:', req.query);
   let sortobj = {};
   switch (sortby) {
     case 'title':

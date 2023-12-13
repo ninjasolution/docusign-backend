@@ -7,7 +7,6 @@ const config = require("../config/index")
 
 exports.list = async (req, res) => {
   const { sortby, title, createdAt, page, keyword } = req.query;
-  console.log('^^^ api document req.query:', req.query);
   let sortobj = {};
   switch (sortby) {
     case 'title':
@@ -90,7 +89,6 @@ exports.getById = (req, res) => {
           stakeholders = users.map(item => item.target)
         }
 
-        console.log(document)
         return res.status(200).send({
           message: config.RES_MSG_DATA_FOUND,
           data: {
@@ -113,7 +111,6 @@ exports.getById = (req, res) => {
 
 exports.recentlist = async (req, res) => {
   const { sortby, title, createdAt, version, page } = req.query;
-  console.log('^^^ api recents req.query:', req.query);
 
   let sortobj = {};
   switch (sortby) {

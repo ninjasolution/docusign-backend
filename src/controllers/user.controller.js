@@ -205,19 +205,21 @@ exports.update = (req, res) => {
     .exec(async (err, user) => {
 
       if (err) {
-        res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+        res.status(500).send({ message: err, status: RES_STATUS_FAIL });
         return;
       }
 
       if (!user) {
-        return res.status(200).send({ message: "User Not found.", status: RES_STATUS_FAIL });
+        return res.status(404).send({ message: "User Not found.", status: RES_STATUS_FAIL });
       }
       const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      if(password && password?.length > 3) {
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        user.password = hashedPassword;
+      }
       user.name = name;
       user.email = email;
       user.image = avatar;
-      user.password = hashedPassword;
       user.userId = userId;
       user.wallet = Math.random();
       user.bio = bio;
@@ -242,19 +244,19 @@ exports.approve = (req, res) => {
     .exec(async (err, user) => {
 
       if (err) {
-        res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+        res.status(500).send({ message: err, status: RES_STATUS_FAIL });
         return;
       }
 
       if (!user) {
-        return res.status(200).send({ message: "User Not found.", status: RES_STATUS_FAIL });
+        return res.status(404).send({ message: "User Not found.", status: RES_STATUS_FAIL });
       }
 
       user.status = 1;
 
       user.save(err => {
         if (err) {
-          return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+          return res.status(500).send({ message: err, status: RES_STATUS_FAIL });
         }
         return res.status(200).json({ status: RES_STATUS_SUCCESS, data: user });
       });
@@ -313,11 +315,11 @@ exports.checkVerification = (req, res) => {
     .exec(async (err, user) => {
 
       if (err) {
-        return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+        return res.status(500).send({ message: err, status: RES_STATUS_FAIL });
       }
 
       if (!user) {
-        return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+        return res.status(404).send({ message: err, status: RES_STATUS_FAIL });
       }
 
       try {
@@ -329,7 +331,7 @@ exports.checkVerification = (req, res) => {
           }, status: RES_STATUS_SUCCESS
         });
       } catch (err) {
-        return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+        return res.status(500).send({ message: err, status: RES_STATUS_FAIL });
       }
 
     })
@@ -341,11 +343,11 @@ exports.getpaymentinfo = (req, res) => {
     .exec(async (err, user) => {
 
       if (err) {
-        return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+        return res.status(500).send({ message: err, status: RES_STATUS_FAIL });
       }
 
       if (!user) {
-        return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+        return res.status(404).send({ message: err, status: RES_STATUS_FAIL });
       }
 
       const result = {
@@ -365,16 +367,16 @@ exports.withdraw = (req, res) => {
   })
     .exec(async (err, user) => {
       if (err) {
-        res.status(200).send({ message: "Incorrect id or password", status: RES_STATUS_FAIL });
+        res.status(500).send({ message: "Incorrect id or password", status: RES_STATUS_FAIL });
         return;
       }
 
       if (!user) {
-        return res.status(200).send({ message: "User doesn't exist", status: RES_STATUS_FAIL });
+        return res.status(404).send({ message: "User doesn't exist", status: RES_STATUS_FAIL });
       }
 
       if (!user.withdrawAddress) {
-        return res.status(200).send({ message: "Please put withdraw address", status: RES_STATUS_FAIL });
+        return res.status(400).send({ message: "Please put withdraw address", status: RES_STATUS_FAIL });
       }
 
       try {
@@ -389,7 +391,7 @@ exports.withdraw = (req, res) => {
 
 
       } catch (error) {
-        return res.status(200).send({ message: "The amount exceeds the total funds", status: RES_STATUS_FAIL });
+        return res.status(500).send({ message: "The amount exceeds the total funds", status: RES_STATUS_FAIL });
       }
 
       try {
@@ -404,7 +406,7 @@ exports.withdraw = (req, res) => {
 
           if (err) {
             console.log("error", err);
-            return res.status(200).send({ message: err, status: RES_STATUS_FAIL });
+            return res.status(500).send({ message: err, status: RES_STATUS_FAIL });
           }
 
           user.transactions.push(transaction);
@@ -414,7 +416,7 @@ exports.withdraw = (req, res) => {
         });
 
       } catch (error) {
-        return res.status(200).send({ message: error, status: RES_STATUS_FAIL });
+        return res.status(500).send({ message: error, status: RES_STATUS_FAIL });
       }
     })
 

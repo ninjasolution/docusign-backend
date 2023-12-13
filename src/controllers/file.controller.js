@@ -9,7 +9,6 @@ exports.create = async (req, res) => {
   try {
     
     if (!req.file) {
-      console.log("No file is available!");
       return res.send({
         success: false
       });
@@ -43,9 +42,7 @@ exports.create = async (req, res) => {
           "Content-Type": "multipart/form-data"
         },
       });
-      // console.log('^-^-^-^', resFile);
       const ipfsURL = process.env.IPFS_CLOUD + resFile.data.IpfsHash;
-      console.log('^-^-^-^fileupload:', ipfsURL);
   
       return res.send({
         fileName: ipfsURL
@@ -62,7 +59,6 @@ exports.create = async (req, res) => {
 }
 
 exports.versioncreate = async (req, res, next) => {
-  // console.log('^^', req.file);
   if (!req.file) {
     console.log("No file is available!");
     return res.send({
