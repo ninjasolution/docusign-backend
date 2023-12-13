@@ -83,6 +83,7 @@ router.put("/document/token/:id", middlewares.authJwt.verifyToken, documentContr
 router.get("/counttotalfolders", middlewares.authJwt.verifyToken, documentController.counttotallist);
 router.get("/countinvitedfolders", middlewares.authJwt.verifyToken, documentController.countinvitedlist);
 router.get("/recentdocuments", middlewares.authJwt.verifyToken, documentController.recentlist);
+router.get("/stakeholders/:document_id", middlewares.authJwt.verifyToken, documentController.stakeholders)
 
 // Version
 router.get("/versions/:document_id", middlewares.authJwt.verifyToken, versionFileController.list);

@@ -1,5 +1,6 @@
 const db = require("../models");
 const Document = db.document;
+const User = db.user;
 const Invitation = db.invitation;
 const VersionFile = db.versionFile;
 
@@ -281,3 +282,22 @@ exports.countinvitedlist = async (req, res) => {
       });
     })
 };
+
+exports.stakeholders = async (req, res) => {
+  const document_id = req.params.document_id;
+  try {
+    const authorIds = (await Invitation.find({ documentId: document_id }))?.map(d => d.target);
+    // console.log(authorIds);
+    // const users = await User.find();
+    const users = await User.find({ _id: { $in: authorIds } });
+    // console.log(users);
+    return res.status(200).send({
+      message: config.RES_MSG_DATA_FOUND,
+      data: users,
+      status: config.RES_STATUS_SUCCESS,
+    });
+  } catch (err) {
+    return res.status(400).send({ message: err.message, status: "errors" });
+  }
+}
+
