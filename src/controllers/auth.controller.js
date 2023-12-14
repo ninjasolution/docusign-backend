@@ -2,7 +2,6 @@ const db = require("../models");
 const User = db.user;
 const Role = db.role;
 const Token = db.token;
-const Project = db.project;
 const twilio = require('twilio');
 const promisify = require('util.promisify');
 const nodemailer = require("nodemailer");
@@ -326,7 +325,7 @@ exports.reset = async (req, res) => {
 
 exports.changePassword = (req, res) => {
   User.findOne({
-    _id: req.body.userId
+    _id: req.userId
   })
     .exec(async (err, user) => {
       if (err) {
@@ -338,14 +337,14 @@ exports.changePassword = (req, res) => {
         return res.status(404).send({ message: "Incorrect id", status: RES_STATUS_FAIL });
       }
 
-      // var passwordIsValid = bcrypt.compareSync(
-      //   req.body.password,
-      //   user.password
-      // );
+      var passwordIsValid = bcrypt.compareSync(
+        req.body.password,
+        user.password
+      );
 
-      // if (!passwordIsValid) {
-      //   return res.status(400).send({ message: "password", status: RES_STATUS_FAIL });
-      // }
+      if (!passwordIsValid) {
+        return res.status(400).send({ message: "password", status: RES_STATUS_FAIL });
+      }
 
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(req.body.newPassword, saltRounds);
