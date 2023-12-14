@@ -1,4 +1,4 @@
-module.exports = (link) => {
+module.exports = (token) => {
 
     let consumer_uri = process.env.CONSUMER_URI;
 
@@ -38,7 +38,7 @@ module.exports = (link) => {
                     <table border="0" cellspacing="0" cellpadding="0" align="center">
                         <tr>
                             <td align="center" style="padding: 14px; border-radius: 4px; background-color: rgb(6, 182, 212);">
-                                    <a href="${consumer_uri}/pages/${link}" target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI'; text-decoration: none; font-size: 20px; line-height: 16px; color: white; border-radius: 4px; overflow: visible; font-weight:bold; ">Verify Email</a>
+                                    <a href="${consumer_uri}/verify-email/${token}" target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI'; text-decoration: none; font-size: 20px; line-height: 16px; color: white; border-radius: 4px; overflow: visible; font-weight:bold; ">Verify Email</a>
                             </td>
                         </tr>
                     </table>
@@ -46,7 +46,7 @@ module.exports = (link) => {
             </tr>
             <tr>
                 <th style="padding-top: 35px;">
-                    <span style="padding-top: 15px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI'; font-size: 15px; color: rgb(6, 182, 212); font-weight: lighter;">Button not working? Paste this link into your browser instead: <br/>${consumer_uri}/pages/${link}</span>
+                    <span style="padding-top: 15px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI'; font-size: 15px; color: rgb(6, 182, 212); font-weight: lighter;">Button not working? Paste this link into your browser instead: <br/>${consumer_uri}/verify-email/${token}</span>
                 </th>
             </tr>
             <tr>

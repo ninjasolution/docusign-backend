@@ -12,20 +12,20 @@ class Service {
     }
 
     async verifyAccount(data) {
-        const html = new verifyAccountEmail(data.link);
+        const html = new verifyAccountEmail(data.token);
 
         const from = `${process.env.SEMD_GRID_COMPANY_MAIL}`;
 
         //convert the email and password to base64 format
         const message = {
             from,
-            to: `${data.user.email}`,
+            to: `${data.email}`,
             subject: `Verify Account - SBS`,
             html,
         };
 
         const status = await this.mailService.send(message).then(res => {
-            console.log('^-^Success : ', data.user.email);
+            console.log('^-^Success : ', data.email);
             return 'success';
         }).catch(err => {
             console.log('^-^Error : ', err);

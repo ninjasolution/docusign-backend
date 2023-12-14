@@ -9,7 +9,7 @@ const crypto = require("crypto")
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const service = require("../service/index")
-const { securityCode, SUBADMIN, USER, RES_MSG_SUCESS, RES_STATUS_FAIL, PROJECT_STATUS_COMPLETED, PROJECT_STATUS_PENDING, RES_MSG_FAIL, RES_STATUS_SUCCESS, RES_MSG_SAVE_SUCCESS } = require("../config");
+const { securityCode, SUBADMIN, USER, RES_MSG_SUCESS, RES_STATUS_FAIL, RES_MSG_FAIL, RES_STATUS_SUCCESS, RES_MSG_SAVE_SUCCESS } = require("../config");
 
 exports.signup = async (req, res) => {
   const { name, email, userId, password, role } = req.body;
@@ -386,10 +386,12 @@ exports.requestEmailVerify = (req, res) => {
         token: crypto.randomBytes(32).toString("hex"),
       }).save();
 
-      const message = `<p>You requested for email verification, kindly use this <a href="${process.env.BASE_URL}/#/auth/verify/${user._id}/${token.token}" target="_blank">link</a> to verify your email address</p>`
-      await sendEmail(user.email, "Verify Email", message);
+      service.verifyAccount({email: user.email, token: token.token}).then(res => {
+        return res.status(200).send({ message: "Sucess", status: RES_MSG_SUCESS });
+      }).catch(err => {
+        return res.status(500).send({ message: "Email send Fail", status: RES_MSG_SUCESS });
+      })
 
-      return res.status(200).send({ message: "Sucess", status: RES_MSG_SUCESS });
     })
 }
 
@@ -413,30 +415,6 @@ exports.requestPhoneVerify = (req, res) => {
     })
 }
 
-const sendEmail = async (email, subject, html) => {
-
-  try {
-
-    const transporter = nodemailer.createTransport({
-      host: process.env.HOST,
-      auth: {
-        user: process.env.USER,
-        pass: process.env.PASS
-      },
-      port: 465
-    })
-
-    await transporter.sendMail({
-      from: process.env.USER,
-      to: email,
-      subject: subject,
-      html: html
-    })
-  } catch {
-    return console.log("SMTP server error");
-  }
-
-}
 
 const sendSMS = async (user) => {
   try {
