@@ -4,7 +4,6 @@ const Role = db.role;
 const Token = db.token;
 const twilio = require('twilio');
 const promisify = require('util.promisify');
-const nodemailer = require("nodemailer");
 const crypto = require("crypto")
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
