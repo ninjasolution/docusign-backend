@@ -12,7 +12,7 @@ class Service {
     }
 
     async verifyAccount(data) {
-        const html = new verifyAccountEmail(data.token);
+        const html = verifyAccountEmail(data.token);
 
         const from = `${process.env.SEMD_GRID_COMPANY_MAIL}`;
 
