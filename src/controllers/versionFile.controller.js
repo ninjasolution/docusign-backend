@@ -117,7 +117,7 @@ exports.getById = (req, res) => {
 
 
 exports.create = async (req, res) => {
-  console.log('^^', req.body, Number.parseFloat(req.body.versoin));
+  console.log('^^', req.body.versoin, Number.parseFloat(req.body.versoin));
   try {
     const versionFile = new VersionFile({
       document: req.body.document_id,
