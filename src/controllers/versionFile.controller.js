@@ -117,7 +117,7 @@ exports.getById = (req, res) => {
 
 
 exports.create = async (req, res) => {
-  console.log('^^', req.body.versoin, Number.parseFloat(req.body.versoin));
+  console.log('^^', req.body, req.body.version);
   try {
     const versionFile = new VersionFile({
       document: req.body.document_id,
@@ -127,18 +127,18 @@ exports.create = async (req, res) => {
       isselected: true,
       iscompleted: false
     });
-    let vMm = req.body.versoin;
+    let vMm = req.body.version;
     const _version = await VersionFile.findOne({
       document: req.body.document_id,
     }).sort({ createdAt: -1 }).limit(1);
     if (_version) {
       if (vMm && Number.parseFloat(vMm) > Number.parseFloat(_version?.version)) {
-        versionFile.version = Number.parseFloat(vMm).toFixed(1);
+        versionFile.version = Number.parseFloat(vMm);
       } else {
-        versionFile.version = (Number.parseFloat(_version?.version) + 0.1).toFixed(1)
+        versionFile.version = (Number.parseFloat(_version?.version) + 0.1)
       }
     } else {
-      versionFile.version = Number.parseFloat(vMm).toFixed(1) || 1.0
+      versionFile.version = Number.parseFloat(vMm) || 1.0
     }
     versionFile.save(async (err, version) => {
       if (err) {
