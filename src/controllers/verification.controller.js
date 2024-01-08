@@ -419,7 +419,6 @@ exports.getById = (req, res) => {
 
 
 exports.create = async (req, res) => {
-    // console.log('^^', req.body);
     let { capture, signature } = req.body;
     if (capture) capture = cb64i(capture);
     if (signature) signature = cb64i(signature);
