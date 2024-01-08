@@ -132,13 +132,13 @@ exports.create = async (req, res) => {
       document: req.body.document_id,
     }).sort({ createdAt: -1 }).limit(1);
     if (_version) {
-      if (vMm && Number(vMm) > Number(_version?.version)) {
-        versionFile.version = Number(vMm).toFixed(1);
+      if (vMm && Number.parseFloat(vMm) > Number.parseFloat(_version?.version)) {
+        versionFile.version = Number.parseFloat(vMm).toFixed(1);
       } else {
-        versionFile.version = (Number(_version?.version) + 0.1).toFixed(1)
+        versionFile.version = (Number.parseFloat(_version?.version) + 0.1).toFixed(1)
       }
     } else {
-      versionFile.version = Number(vMm).toFixed(1) || 1.0
+      versionFile.version = Number.parseFloat(vMm).toFixed(1) || 1.0
     }
     versionFile.save(async (err, version) => {
       if (err) {
