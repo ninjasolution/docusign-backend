@@ -212,7 +212,7 @@ exports.setRole = (req, res) => {
 };
 
 exports.update = (req, res) => {
-  const { name, email, password, avatar, phone, countrycode, userId, bio, facebookLink, linkedInLink } = req.body;
+  const { name, email, password, avatar, phone, countrycode, userId, bio, telegram, twitter } = req.body;
   User.findOne({ _id: req.userId })
     .populate('role', "name")
     .exec(async (err, user) => {
@@ -236,8 +236,8 @@ exports.update = (req, res) => {
       user.userId = userId;
       user.wallet = Math.random();
       user.bio = bio;
-      user.facebookLink = facebookLink;
-      user.linkedInLink = linkedInLink;
+      user.telegram = telegram;
+      user.twitter = twitter;
       if (avatar) {
         user.image = avatar;
       }
